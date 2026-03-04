@@ -1,0 +1,1391 @@
+/* Account approvals – corporate / government style */
+
+.account-approvals-page {
+  padding-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767.98px) {
+  .account-approvals-page {
+    padding-top: 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .account-approvals-page {
+    padding-top: 1.5rem;
+  }
+}
+
+/* Page header – original (do not modify) */
+.account-approvals-header {
+  margin-bottom: 1.5rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 767.98px) {
+  .account-approvals-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .account-approvals-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .account-approvals-refresh-btn {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .account-approvals-title {
+    font-size: 1.15rem;
+  }
+
+  .account-approvals-subtitle {
+    font-size: 0.85rem;
+  }
+}
+
+.account-approvals-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.account-approvals-header-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.account-approvals-title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--sidebar-bg, #eef2f7) 0%, var(--sidebar-footer-bg, #e2e8f0) 100%);
+  color: var(--primary-blue, #0b558f);
+  font-size: 1.15rem;
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.account-approvals-title-icon:hover {
+  color: var(--primary-blue-dark, #094a75);
+  border-color: var(--primary-blue, #0b558f);
+  box-shadow: 0 2px 6px rgba(var(--primary-blue-rgb, 11, 85, 143), 0.12);
+}
+
+.account-approvals-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.account-approvals-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.45;
+}
+
+.account-approvals-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.account-approvals-refresh-btn:hover:not(:disabled) {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #334155 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.account-approvals-refresh-btn:disabled {
+  border-color: #e2e8f0 !important;
+}
+
+.account-approvals-refresh-btn .spinner {
+  font-size: 0.95rem;
+}
+
+/* Card – wraps filter, table/empty */
+.account-approvals-card {
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Search filter panel – inside card, corporate style (TasDoneNa-style) */
+.account-approvals-filter-panel {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  background: #f8f9fa;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.account-approvals-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.account-approvals-search-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--footer-text, #4a5568);
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 2.25rem;
+}
+
+.account-approvals-search-wrap {
+  display: flex;
+  align-items: center;
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 100%;
+  height: 2.25rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  background: var(--background-white, #fff);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.account-approvals-search-wrap:focus-within {
+  border-color: var(--primary-blue, #0b558f);
+  box-shadow: 0 0 0 2px rgba(var(--primary-blue-rgb, 11, 85, 143), 0.12);
+}
+
+.account-approvals-search-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  min-width: 2.25rem;
+  height: 100%;
+  color: var(--sidebar-heading-text, #5a6c7d);
+  border-radius: 6px 0 0 6px;
+}
+
+.account-approvals-search-icon {
+  font-size: 0.8125rem;
+}
+
+.account-approvals-search-input-wrap {
+  position: relative;
+  flex: 1 1 6rem;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.account-approvals-search-input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 2rem 0 0.5rem;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.875rem;
+  color: var(--sidebar-text, #1e3a5f);
+  background: transparent;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.account-approvals-search-input::placeholder {
+  color: var(--sidebar-heading-text, #94a3b8);
+}
+
+.account-approvals-search-input::-webkit-search-cancel-button,
+.account-approvals-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.account-approvals-search-clear {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sidebar-heading-text, #5a6c7d);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.account-approvals-search-clear:hover {
+  color: var(--primary-blue, #0b558f);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.account-approvals-results-text {
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Empty state – no search matches (TasDoneNa-style) */
+.account-approvals-empty-state {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  margin: 0;
+}
+
+.account-approvals-empty-state-icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 50%;
+  color: var(--sidebar-heading-text, #5a6c7d);
+  font-size: 1.125rem;
+}
+
+.account-approvals-empty-state-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  margin: 0 0 0.375rem;
+}
+
+.account-approvals-empty-state-text {
+  font-size: 0.875rem;
+  color: var(--footer-text, #4a5568);
+  margin: 0 0 1.25rem;
+  max-width: 22rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.account-approvals-empty-state-btn {
+  background: var(--primary-blue, #0b558f);
+  color: #fff;
+  border: 1px solid var(--primary-blue, #0b558f);
+  border-radius: 6px;
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.account-approvals-empty-state-btn:hover {
+  background: var(--primary-blue-dark, #094a75);
+  border-color: var(--primary-blue-dark, #094a75);
+  color: #fff;
+}
+
+/* Table + footer container – inside card */
+.account-approvals-table-container {
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.account-approvals-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: visible;
+}
+
+/* Table: min-width so columns stay readable; horizontal scroll on narrow screens */
+.account-approvals-table {
+  width: 100%;
+  min-width: 58rem; /* Ensures table scrolls when viewport is narrow; columns stay readable */
+}
+
+/* Footer bar: per-page + range + pagination buttons at bottom of table */
+.account-approvals-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.account-approvals-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.account-approvals-perpage-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.account-approvals-perpage-text {
+  white-space: nowrap;
+}
+
+.account-approvals-perpage-select {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--sidebar-text, #1e3a5f);
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-approvals-perpage-select:hover,
+.account-approvals-perpage-select:focus {
+  border-color: var(--primary-blue, #0b558f);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-blue-rgb, 11, 85, 143), 0.15);
+}
+
+.account-approvals-range {
+  font-size: 0.875rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.account-approvals-range strong {
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.account-approvals-pagination {
+  margin: 0;
+  width: auto;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.account-approvals-pagination-inner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  width: auto;
+  min-width: 0;
+}
+
+.account-approvals-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.account-approvals-page-btn:hover:not(:disabled) {
+  background: var(--sidebar-bg, #eef2f7);
+  border-color: var(--primary-blue, #0b558f);
+  color: var(--primary-blue, #0b558f);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.account-approvals-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--sidebar-bg, #eef2f7) !important;
+  border-color: var(--border-color, #e5e7eb) !important;
+  color: var(--footer-text, #4a5568) !important;
+}
+
+.account-approvals-page-btn.active {
+  background: var(--primary-blue, #0b558f) !important;
+  border-color: var(--primary-blue, #0b558f) !important;
+  color: #fff !important;
+  cursor: default;
+}
+
+.account-approvals-page-btn.active:hover {
+  background: var(--primary-blue, #0b558f) !important;
+  border-color: var(--primary-blue, #0b558f) !important;
+  color: #fff !important;
+}
+
+.account-approvals-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.account-approvals-page-num {
+  min-width: 2.25rem;
+}
+
+.account-approvals-page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  font-size: 0.875rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.account-approvals-page-btn-text {
+  white-space: nowrap;
+}
+
+.account-approvals-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  font-size: 0.95rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.account-approvals-loading .spinner {
+  font-size: 1.25rem;
+}
+
+.account-approvals-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: #fff;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.account-approvals-empty-icon {
+  font-size: 2.5rem;
+  color: var(--sidebar-heading-text, #5a6c7d);
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.account-approvals-empty-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.account-approvals-empty-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--footer-text, #4a5568);
+}
+
+
+.account-approvals-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  table-layout: auto;
+}
+
+/* Min-width per column so content stays readable; table scrolls horizontally on narrow screens */
+.account-approvals-table th:nth-child(3),
+.account-approvals-table td:nth-child(3) { min-width: 10rem; }  /* Name */
+.account-approvals-table th:nth-child(4),
+.account-approvals-table td:nth-child(4) { min-width: 14rem; }  /* Email */
+.account-approvals-table th:nth-child(5),
+.account-approvals-table td:nth-child(5) { min-width: 7rem; }   /* Employee ID */
+.account-approvals-table th:nth-child(6),
+.account-approvals-table td:nth-child(6) { min-width: 14rem; }  /* Position */
+.account-approvals-table th:nth-child(7),
+.account-approvals-table td:nth-child(7) { min-width: 11rem; }  /* Date submitted */
+
+/* Fixed row height, one line per row across all devices */
+.account-approvals-table thead tr {
+  height: 2.75rem;
+}
+
+.account-approvals-table tbody tr {
+  height: 2.75rem;
+}
+
+.account-approvals-table th,
+.account-approvals-table td {
+  padding: 0 0.75rem;
+  height: 2.75rem;
+  max-height: 2.75rem;
+  line-height: 1.4;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-approvals-table th {
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  background: var(--sidebar-bg, #eef2f7);
+}
+
+/* Sticky # column (left) when table scrolls horizontally */
+.account-approvals-table th:first-child,
+.account-approvals-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  max-width: 2.75rem;
+  text-align: center;
+  color: var(--footer-text, #4a5568);
+  background: var(--sidebar-bg, #eef2f7);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.04);
+}
+
+.account-approvals-table tbody td:first-child {
+  background: var(--background-white, #fff);
+}
+
+.account-approvals-table tbody tr:hover td:first-child {
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.04);
+}
+
+.account-approvals-table th:first-child {
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+/* Sticky # and Actions: both stick on the LEFT when scrolling (same order everywhere) */
+.account-approvals-table th:nth-child(2),
+.account-approvals-table td.account-approvals-col-actions {
+  position: sticky;
+  left: 2.75rem; /* right after # column */
+  z-index: 2;
+  width: 7.5rem;
+  min-width: 7.5rem;
+  max-width: 7.5rem;
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+  background: var(--sidebar-bg, #eef2f7);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.04);
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  backface-visibility: hidden;
+}
+
+.account-approvals-table tbody td.account-approvals-col-actions {
+  background: var(--background-white, #fff);
+}
+
+.account-approvals-table tbody tr:hover td.account-approvals-col-actions {
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.04);
+}
+
+.account-approvals-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.account-approvals-table tbody tr:hover td {
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.03);
+}
+
+/* Ensure sticky cells get hover background (overrides above for first/actions) */
+.account-approvals-table tbody tr:hover td:first-child {
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.04);
+}
+
+.account-approvals-table tbody tr:hover td.account-approvals-col-actions {
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.04);
+}
+
+.account-approvals-name {
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+/* Ensure Name and all text cells truncate with ellipsis when too long (same on large and mobile) */
+.account-approvals-table td[data-label="Name"] .account-approvals-name,
+.account-approvals-table td .account-approvals-name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-approvals-col-actions {
+  white-space: nowrap;
+}
+
+.account-approvals-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+}
+
+/* Action buttons: solid colors, root scheme, smooth hover, no glow/shadow */
+.account-approvals-btn-details,
+.account-approvals-btn-approve,
+.account-approvals-btn-reject {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  padding: 0;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  box-shadow: none !important;
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease,
+    transform 0.2s ease;
+}
+
+/* View details – solid, root color scheme, same style as Approve/Reject */
+.account-approvals-btn-details {
+  background-color: var(--sidebar-text, #1e3a5f) !important;
+  border-color: var(--sidebar-text, #1e3a5f) !important;
+  color: var(--btn-primary-text, #fff) !important;
+}
+
+.account-approvals-btn-details:hover {
+  background-color: #153050 !important;
+  border-color: #153050 !important;
+  color: var(--btn-primary-text, #fff) !important;
+  transform: translateY(-1px);
+}
+
+.account-approvals-btn-details:active {
+  transform: translateY(0);
+}
+
+/* Approve – solid primary blue, no shadow */
+.account-approvals-btn-approve {
+  background-color: var(--primary-blue, #0b558f) !important;
+  border-color: var(--primary-blue, #0b558f) !important;
+  color: var(--btn-primary-text, #fff) !important;
+}
+
+.account-approvals-btn-approve:hover:not(:disabled) {
+  background-color: var(--primary-blue-dark, #094a75) !important;
+  border-color: var(--primary-blue-dark, #094a75) !important;
+  color: var(--btn-primary-text, #fff) !important;
+  transform: translateY(-1px);
+}
+
+.account-approvals-btn-approve:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.account-approvals-btn-approve:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Reject – solid red, no shadow */
+.account-approvals-btn-reject {
+  background-color: #b91c1c !important;
+  border-color: #b91c1c !important;
+  color: #fff !important;
+}
+
+.account-approvals-btn-reject:hover:not(:disabled) {
+  background-color: #991b1b !important;
+  border-color: #991b1b !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+.account-approvals-btn-reject:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.account-approvals-btn-reject:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.account-approvals-btn-approve .spinner,
+.account-approvals-btn-reject .spinner {
+  font-size: 0.95rem;
+}
+
+/* Keep action buttons compact so they stay on one line in the Actions column */
+.account-approvals-col-actions .account-approvals-btn-details,
+.account-approvals-col-actions .account-approvals-btn-approve,
+.account-approvals-col-actions .account-approvals-btn-reject {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  font-size: 0.9rem;
+}
+
+/* View details modal – portal (document.body), corporate / government style */
+.account-approvals-details-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.account-approvals-details-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.account-approvals-details-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-approvals-details-modal {
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 12px;
+  width: 100%;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.account-approvals-details-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px 12px 0 0;
+}
+
+.account-approvals-details-header-text {
+  min-width: 0;
+}
+
+.account-approvals-details-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.account-approvals-details-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.4;
+}
+
+.account-approvals-details-close {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--footer-text, #4a5568);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.account-approvals-details-close:hover {
+  color: var(--sidebar-text, #1e3a5f);
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--border-color, #e5e7eb);
+}
+
+.account-approvals-details-body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.account-approvals-details-grid {
+  margin: 0;
+  display: grid;
+  gap: 0;
+}
+
+.account-approvals-details-row {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  font-size: 0.875rem;
+}
+
+.account-approvals-details-row:last-child {
+  border-bottom: none;
+}
+
+.account-approvals-details-row dt {
+  margin: 0;
+  font-weight: 600;
+  color: var(--sidebar-heading-text, #5a6c7d);
+}
+
+.account-approvals-details-row dd {
+  margin: 0;
+  color: var(--sidebar-text, #1e3a5f);
+  word-break: break-word;
+}
+
+.account-approvals-details-footer {
+  padding: 1rem 1.5rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0 0 12px 12px;
+}
+
+.account-approvals-details-btn-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.account-approvals-details-btn-close:hover {
+  background: #f8fafc;
+  border-color: var(--primary-blue, #0b558f);
+  color: var(--primary-blue, #0b558f);
+}
+
+/* Approve / Reject action modals – remarks field and footer buttons (root color scheme) */
+.account-approvals-action-overlay {
+  z-index: 1051;
+}
+
+.account-approvals-action-modal {
+  max-width: 28rem;
+}
+
+.account-approvals-remarks-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  margin: 0 0 0.5rem;
+}
+
+.account-approvals-remarks-optional {
+  font-weight: 500;
+  color: var(--footer-text, #4a5568);
+}
+
+.account-approvals-remarks-textarea {
+  width: 100%;
+  min-height: 5.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--input-text, #1a1a1a);
+  background: var(--input-bg, #fff);
+  border: 1px solid var(--input-border, #d1d5db);
+  border-radius: 8px;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-approvals-remarks-textarea:focus {
+  outline: none;
+  border-color: var(--primary-blue, #0b558f);
+  box-shadow: 0 0 0 2px rgba(var(--primary-blue-rgb, 11, 85, 143), 0.15);
+}
+
+.account-approvals-remarks-textarea::placeholder {
+  color: var(--sidebar-heading-text, #94a3b8);
+}
+
+.account-approvals-remarks-hint {
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+  margin: 0.5rem 0 0;
+  line-height: 1.4;
+}
+
+.account-approvals-approve-default-tasks {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sidebar-border, #d1dae6);
+}
+
+.account-approvals-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--sidebar-text, #1e3a5f);
+  cursor: pointer;
+}
+
+.account-approvals-checkbox {
+  margin-top: 0.2rem;
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary-blue, #0b558f);
+  cursor: pointer;
+}
+
+.account-approvals-checkbox-hint {
+  margin: 0.35rem 0 0 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.4;
+}
+
+.account-approvals-action-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.account-approvals-btn-approve-modal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--btn-primary-text, #fff);
+  background: var(--btn-primary-bg, var(--primary-blue, #0b558f));
+  border: 1px solid var(--btn-primary-bg, var(--primary-blue, #0b558f));
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.22s ease, border-color 0.22s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.account-approvals-btn-approve-modal:hover:not(:disabled) {
+  background: var(--btn-primary-hover, var(--primary-blue-dark, #094a75));
+  border-color: var(--btn-primary-hover, var(--primary-blue-dark, #094a75));
+  color: var(--btn-primary-text, #fff);
+}
+
+.account-approvals-btn-approve-modal:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.account-approvals-btn-approve-modal .spinner {
+  font-size: 0.95rem;
+}
+
+.account-approvals-reject-header .account-approvals-details-title {
+  color: var(--reject-red, #b91c1c);
+}
+
+.account-approvals-btn-reject-modal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--reject-red, #b91c1c);
+  border: 1px solid var(--reject-red, #b91c1c);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.22s ease, border-color 0.22s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.account-approvals-btn-reject-modal:hover:not(:disabled) {
+  background: var(--reject-red-dark, #991b1b);
+  border-color: var(--reject-red-dark, #991b1b);
+  color: #fff;
+}
+
+.account-approvals-btn-reject-modal:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.account-approvals-btn-reject-modal .spinner {
+  font-size: 0.95rem;
+}
+
+/* Confirmation dialogs (above action modals) */
+.account-approvals-confirm-overlay {
+  z-index: 1052;
+}
+
+.account-approvals-confirm-wrap {
+  max-width: 26rem;
+}
+
+.account-approvals-confirm-modal {
+  max-width: 26rem;
+}
+
+.account-approvals-confirm-body {
+  padding-top: 0.5rem;
+}
+
+.account-approvals-confirm-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--sidebar-text, #1e3a5f);
+  line-height: 1.5;
+}
+
+.account-approvals-confirm-text strong {
+  font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+  .account-approvals-details-overlay {
+    padding: 0.75rem;
+  }
+
+  .account-approvals-details-modal {
+    max-height: calc(100vh - 1.5rem);
+  }
+
+  .account-approvals-details-header,
+  .account-approvals-details-body,
+  .account-approvals-details-footer {
+    padding: 1rem 1.25rem;
+  }
+
+  .account-approvals-details-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    padding: 0.5rem 0;
+  }
+
+  .account-approvals-details-row dt {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Search panel – responsive (tablet & mobile), corporate style */
+@media (max-width: 991.98px) {
+  .account-approvals-filter-panel {
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
+  }
+
+  .account-approvals-filter-row {
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+  }
+
+  .account-approvals-search-wrap {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .account-approvals-results-text {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .account-approvals-filter-panel {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .account-approvals-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .account-approvals-search-label {
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    margin-bottom: 0;
+  }
+
+  .account-approvals-search-wrap {
+    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .account-approvals-results-text {
+    width: auto;
+    margin-top: 0;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .account-approvals-filter-panel {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .account-approvals-filter-row {
+    gap: 0.375rem;
+  }
+
+  .account-approvals-search-wrap {
+    height: 2.5rem;
+    min-height: 2.5rem;
+  }
+
+  .account-approvals-search-input {
+    font-size: 0.9375rem;
+  }
+
+  .account-approvals-results-text {
+    font-size: 0.75rem;
+  }
+}
+
+/* Tablet: table tweaks */
+@media (max-width: 991.98px) {
+  .account-approvals-table th,
+  .account-approvals-table td {
+    padding: 0 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .account-approvals-table-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .account-approvals-footer-left {
+    justify-content: space-between;
+  }
+
+  .account-approvals-pagination {
+    justify-content: center;
+  }
+
+  .account-approvals-pagination-inner {
+    justify-content: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .account-approvals-page-btn {
+    min-width: 2rem;
+    height: 2rem;
+    font-size: 0.8125rem;
+  }
+
+  .account-approvals-page-num {
+    min-width: 2rem;
+  }
+}
+
+/* Mobile: footer + pagination – fit viewport, no horizontal scroll */
+@media (max-width: 575.98px) {
+  .account-approvals-table-footer {
+    padding: 0.75rem 0.75rem;
+    gap: 0.625rem;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .account-approvals-footer-left {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .account-approvals-perpage-label {
+    flex-wrap: wrap;
+  }
+
+  .account-approvals-perpage-text {
+    white-space: normal;
+  }
+
+  .account-approvals-pagination {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .account-approvals-pagination-inner {
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    width: fit-content !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    display: flex;
+  }
+
+  .account-approvals-page-numbers {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .account-approvals-page-btn-text {
+    display: none;
+  }
+
+  .account-approvals-page-btn:not(.account-approvals-page-num) {
+    padding: 0;
+    min-width: 2rem;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+  }
+
+  .account-approvals-page-num {
+    min-width: 1.75rem;
+    width: auto;
+    padding: 0 0.4rem;
+  }
+
+  .account-approvals-page-ellipsis {
+    min-width: 1rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .account-approvals-table-footer {
+    padding: 0.75rem 1rem;
+  }
+
+  .account-approvals-pagination-inner {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

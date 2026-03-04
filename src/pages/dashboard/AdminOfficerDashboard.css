@@ -1,0 +1,563 @@
+/* Administrative Officer Dashboard – corporate / government style, index.css color scheme */
+
+.ao-dashboard-page {
+  padding-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767.98px) {
+  .ao-dashboard-page {
+    padding-top: 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .ao-dashboard-page {
+    padding-top: 1.5rem;
+  }
+}
+
+/* Header – matches Personnel Directory / Account Approvals */
+.ao-dashboard-header {
+  margin-bottom: 1.5rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.ao-dashboard-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ao-dashboard-header-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.ao-dashboard-title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--sidebar-bg, #eef2f7) 0%, var(--sidebar-footer-bg, #e2e8f0) 100%);
+  color: var(--primary-blue, #0b558f);
+  font-size: 1.15rem;
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.ao-dashboard-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.ao-dashboard-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.45;
+}
+
+.ao-dashboard-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  background: var(--background-white, #fff);
+  color: var(--footer-text, #4a5568);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.ao-dashboard-refresh-btn:hover:not(:disabled) {
+  background: var(--sidebar-bg, #eef2f7);
+  border-color: var(--primary-blue, #0b558f);
+  color: var(--primary-blue, #0b558f);
+}
+
+.ao-dashboard-refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ao-dashboard-refresh-btn .spinner {
+  font-size: 0.95rem;
+}
+
+@media (max-width: 767.98px) {
+  .ao-dashboard-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .ao-dashboard-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ao-dashboard-refresh-btn {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .ao-dashboard-title {
+    font-size: 1.15rem;
+  }
+
+  .ao-dashboard-subtitle {
+    font-size: 0.85rem;
+  }
+}
+
+/* Loading state */
+.ao-dashboard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--footer-text, #4a5568);
+  font-size: 0.9375rem;
+}
+
+ .ao-dashboard-loading .spinner {
+  font-size: 1.25rem;
+}
+
+/* Reminders panel */
+.ao-dashboard-reminders {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ao-dashboard-reminders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.ao-dashboard-reminders-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.ao-dashboard-reminders-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  border-radius: 999px;
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.06);
+  color: var(--primary-blue, #0b558f);
+  border: 1px solid rgba(var(--primary-blue-rgb, 11, 85, 143), 0.12);
+}
+
+.ao-dashboard-reminders-title {
+  margin: 0 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.ao-dashboard-reminders-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.ao-dashboard-reminders-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.ao-dashboard-reminders-loading .spinner {
+  font-size: 0.9rem;
+}
+
+.ao-dashboard-reminders-empty {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.ao-dashboard-reminders-list {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+}
+
+.ao-dashboard-reminder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.ao-dashboard-reminder-item:first-child {
+  border-top: none;
+}
+
+.ao-dashboard-reminder-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ao-dashboard-reminder-task {
+  margin: 0 0 0.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.ao-dashboard-reminder-task-name {
+  font-weight: 600;
+}
+
+.ao-dashboard-reminder-badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.08);
+  color: var(--primary-blue, #0b558f);
+}
+
+.ao-dashboard-reminder-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.ao-dashboard-reminder-label {
+  font-weight: 600;
+}
+
+.ao-dashboard-reminder-actions {
+  flex-shrink: 0;
+}
+
+.ao-dashboard-reminder-link {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--primary-blue, #0b558f);
+  text-decoration: none;
+}
+
+.ao-dashboard-reminder-link:hover {
+  text-decoration: underline;
+}
+
+/* KPI grid – matches Personnel Directory */
+.ao-dashboard-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ao-dashboard-kpi-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 8px;
+  padding: 1.25rem 1.25rem;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ao-dashboard-kpi-card:hover {
+  background: var(--sidebar-footer-bg, #e2e8f0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.ao-dashboard-kpi-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.ao-dashboard-kpi-icon {
+  font-size: 1.15rem;
+}
+
+.ao-dashboard-kpi-pending .ao-dashboard-kpi-icon-wrap {
+  background: linear-gradient(135deg, rgba(var(--primary-blue-rgb, 11, 85, 143), 0.08) 0%, rgba(var(--primary-blue-rgb, 11, 85, 143), 0.04) 100%);
+  color: var(--primary-blue, #0b558f);
+}
+
+.ao-dashboard-kpi-missing .ao-dashboard-kpi-icon-wrap {
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.06) 0%, rgba(185, 28, 28, 0.03) 100%);
+  color: var(--reject-red, #b91c1c);
+}
+
+.ao-dashboard-kpi-completed .ao-dashboard-kpi-icon-wrap {
+  background: linear-gradient(135deg, rgba(var(--success-green-rgb, 22, 163, 74), 0.08) 0%, rgba(var(--success-green-rgb, 22, 163, 74), 0.04) 100%);
+  color: var(--success-green, #16a34a);
+}
+
+.ao-dashboard-kpi-body {
+  margin: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.ao-dashboard-kpi-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--footer-text, #4a5568);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+}
+
+.ao-dashboard-kpi-value {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.ao-dashboard-kpi-pending .ao-dashboard-kpi-value {
+  color: var(--primary-blue, #0b558f);
+}
+
+.ao-dashboard-kpi-missing .ao-dashboard-kpi-value {
+  color: var(--reject-red, #b91c1c);
+}
+
+.ao-dashboard-kpi-submitted .ao-dashboard-kpi-value {
+  color: var(--primary-blue, #0b558f);
+}
+
+.ao-dashboard-kpi-completed .ao-dashboard-kpi-value {
+  color: var(--success-green, #16a34a);
+}
+
+.ao-dashboard-kpi-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.3;
+}
+
+@media (max-width: 767.98px) {
+  .ao-dashboard-reminders {
+    padding: 0.875rem 1rem;
+  }
+
+  .ao-dashboard-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sections */
+.ao-dashboard-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ao-dashboard-section {
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  padding: 1.25rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ao-dashboard-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.ao-dashboard-section-icon {
+  font-size: 1rem;
+  color: var(--primary-blue, #0b558f);
+}
+
+.ao-dashboard-section-missing .ao-dashboard-section-icon {
+  color: var(--reject-red, #b91c1c);
+}
+
+.ao-dashboard-section-completed .ao-dashboard-section-icon {
+  color: var(--success-green, #16a34a);
+}
+
+.ao-dashboard-empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--footer-text, #4a5568);
+  font-style: italic;
+}
+
+/* Task list */
+.ao-dashboard-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Task card – corporate hover style, clickable link */
+.ao-dashboard-task-card {
+  display: block;
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ao-dashboard-task-card-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.ao-dashboard-task-card:hover {
+  background: var(--sidebar-footer-bg, #e2e8f0);
+  border-color: var(--primary-blue, #0b558f);
+  box-shadow: 0 1px 4px rgba(var(--primary-blue-rgb, 11, 85, 143), 0.08);
+}
+
+.ao-dashboard-task-card-overdue {
+  border-left: 3px solid var(--reject-red, #b91c1c);
+}
+
+.ao-dashboard-task-card-completed {
+  border-left: 3px solid var(--success-green, #16a34a);
+}
+
+.ao-dashboard-task-card-submitted {
+  border-left: 3px solid var(--primary-blue, #0b558f);
+}
+
+.ao-dashboard-task-card-body {
+  padding: 0;
+}
+
+.ao-dashboard-task-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.ao-dashboard-task-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  line-height: 1.35;
+}
+
+.ao-dashboard-task-card-due {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--footer-text, #4a5568);
+  white-space: nowrap;
+}
+
+.ao-dashboard-task-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.ao-dashboard-task-card-frequency {
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.ao-dashboard-task-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-blue, #0b558f);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ao-dashboard-task-card-action-icon {
+  font-size: 0.7rem;
+}
+
+.ao-dashboard-task-card-mov {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.45;
+}
+
+.ao-dashboard-task-card-mov-label {
+  font-weight: 600;
+  color: var(--sidebar-heading-text, #5a6c7d);
+}
+
+/* Pending note for users awaiting approval */
+.ao-dashboard-pending-note {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 8px;
+}

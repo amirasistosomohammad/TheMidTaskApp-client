@@ -1,0 +1,359 @@
+/* Create School Head – corporate / government style, index.css color scheme */
+
+.create-school-head-page {
+  padding-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767.98px) {
+  .create-school-head-page {
+    padding-top: 1.25rem;
+  }
+}
+
+.create-school-head-header {
+  margin-bottom: 1rem;
+}
+
+.create-school-head-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  background: var(--background-white, #fff);
+  color: var(--footer-text, #4a5568);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+}
+
+.create-school-head-back-btn:hover {
+  background: var(--sidebar-bg, #eef2f7);
+  border-color: var(--primary-blue, #0b558f);
+  color: var(--primary-blue, #0b558f);
+}
+
+.create-school-head-card {
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.create-school-head-card-header {
+  background: var(--sidebar-bg, #eef2f7);
+  border-bottom: 1px solid var(--sidebar-border, #d1dae6);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.create-school-head-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--sidebar-bg, #eef2f7) 0%, var(--sidebar-footer-bg, #e2e8f0) 100%);
+  color: var(--primary-blue, #0b558f);
+  font-size: 1.15rem;
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  flex-shrink: 0;
+}
+
+.create-school-head-card-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.create-school-head-card-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.45;
+}
+
+.create-school-head-form {
+  padding: 1.5rem;
+}
+
+.create-school-head-form-group {
+  margin-bottom: 1.25rem;
+}
+
+.create-school-head-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  margin-bottom: 0.5rem;
+}
+
+.create-school-head-required {
+  color: #b91c1c;
+}
+
+.create-school-head-optional {
+  font-weight: 500;
+  color: var(--footer-text, #4a5568);
+}
+
+.create-school-head-input,
+.create-school-head-select {
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  color: var(--input-text, #1a1a1a);
+  background: var(--input-bg, #fff);
+  border: 1px solid var(--input-border, #d1d5db);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.create-school-head-input:focus,
+.create-school-head-select:focus {
+  outline: none;
+  border-color: var(--primary-blue, #0b558f);
+  box-shadow: 0 0 0 2px rgba(var(--primary-blue-rgb, 11, 85, 143), 0.15);
+}
+
+.create-school-head-input-error {
+  border-color: #b91c1c;
+}
+
+.create-school-head-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: #b91c1c;
+}
+
+.create-school-head-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.create-school-head-password-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 24rem;
+}
+
+.create-school-head-password-wrap .create-school-head-input {
+  flex: 1;
+  max-width: none;
+}
+
+.create-school-head-gen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--primary-blue, #0b558f);
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.create-school-head-gen-btn:hover:not(:disabled) {
+  background: var(--sidebar-footer-bg, #e2e8f0);
+  border-color: var(--primary-blue, #0b558f);
+}
+
+.create-school-head-form-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.create-school-head-btn-cancel {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--footer-text, #4a5568);
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  text-decoration: none;
+}
+
+.create-school-head-btn-cancel:hover:not(:disabled) {
+  background: var(--sidebar-bg, #eef2f7);
+  border-color: var(--primary-blue, #0b558f);
+  color: var(--primary-blue, #0b558f);
+}
+
+.create-school-head-btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--btn-primary-text, #fff);
+  background: var(--btn-primary-bg, #0b558f);
+  border: 1px solid var(--btn-primary-bg, #0b558f);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.create-school-head-btn-submit:hover:not(:disabled) {
+  background: var(--btn-primary-hover, #094a75);
+  border-color: var(--btn-primary-hover, #094a75);
+}
+
+.create-school-head-btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.create-school-head-btn-submit .spinner {
+  font-size: 0.95rem;
+}
+
+/* Credentials modal */
+.create-school-head-credentials-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.create-school-head-credentials-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.create-school-head-credentials-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.create-school-head-credentials-modal {
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 1.5rem;
+}
+
+.create-school-head-credentials-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.create-school-head-credentials-subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.create-school-head-credentials-box {
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.create-school-head-credentials-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.create-school-head-credentials-row:last-child {
+  margin-bottom: 0;
+}
+
+.create-school-head-credentials-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  min-width: 5rem;
+}
+
+.create-school-head-credentials-value {
+  font-size: 0.9375rem;
+  font-family: ui-monospace, monospace;
+  color: var(--sidebar-text, #1e3a5f);
+  word-break: break-all;
+}
+
+.create-school-head-credentials-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.create-school-head-credentials-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary-blue, #0b558f);
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--primary-blue, #0b558f);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.create-school-head-credentials-copy:hover {
+  background: var(--primary-blue, #0b558f);
+  color: var(--btn-primary-text, #fff);
+}
+
+.create-school-head-credentials-done {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--btn-primary-text, #fff);
+  background: var(--btn-primary-bg, #0b558f);
+  border: 1px solid var(--btn-primary-bg, #0b558f);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.create-school-head-credentials-done:hover {
+  background: var(--btn-primary-hover, #094a75);
+  border-color: var(--btn-primary-hover, #094a75);
+}

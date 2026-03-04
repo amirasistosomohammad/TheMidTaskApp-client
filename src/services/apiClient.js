@@ -1,0 +1,94 @@
+const API_BASE = import.meta.env.VITE_LARAVEL_API || "/api";
+
+if (!import.meta.env.VITE_LARAVEL_API) {
+  console.warn("VITE_LARAVEL_API is not set. Using /api (works with Vite proxy in dev).");
+}
+
+export function getAuthToken() {
+  return localStorage.getItem("midtask_token");
+}
+
+export function setAuthToken(token) {
+  if (!token) localStorage.removeItem("midtask_token");
+  else localStorage.setItem("midtask_token", token);
+}
+
+export async function apiRequest(path, { method = "GET", body, auth = false } = {}) {
+  const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+  const headers = { Accept: "application/json" };
+
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+
+  if (auth) {
+    const token = getAuthToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (fetchErr) {
+    const msg = fetchErr?.message === "Failed to fetch"
+      ? "Could not reach the server. Ensure the backend is running (php artisan serve) and the dev server was restarted after config changes."
+      : fetchErr?.message || "Network error";
+    const err = new Error(msg);
+    err.cause = fetchErr;
+    throw err;
+  }
+
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const data = isJson ? await res.json() : null;
+
+  if (!res.ok) {
+    const err = new Error(data?.message || "Request failed");
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+
+  return data;
+}
+
+/** Multipart/form-data request (e.g. file upload). Do not set Content-Type. */
+export async function apiRequestFormData(path, { method = "POST", formData, auth = false } = {}) {
+  const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+  const headers = { Accept: "application/json" };
+
+  if (auth) {
+    const token = getAuthToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers,
+      body: formData,
+    });
+  } catch (fetchErr) {
+    const msg = fetchErr?.message === "Failed to fetch"
+      ? "Could not reach the server. Ensure the backend is running (php artisan serve) and the dev server was restarted after config changes."
+      : fetchErr?.message || "Network error";
+    const err = new Error(msg);
+    err.cause = fetchErr;
+    throw err;
+  }
+
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const data = isJson ? await res.json() : null;
+
+  if (!res.ok) {
+    const err = new Error(data?.message || "Request failed");
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+
+  return data;
+}
+

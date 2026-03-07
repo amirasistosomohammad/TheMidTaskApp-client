@@ -23,6 +23,7 @@ import {
 import { apiRequest } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import "./PersonnelDirectory.css";
+import "./SchoolHeadAccounts.css";
 
 function getInitials(name) {
   if (!name || typeof name !== "string") return "?";
@@ -88,6 +89,9 @@ const STATUS_OPTIONS = [
 export default function PersonnelDirectory() {
   const [personnel, setPersonnel] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [backgroundRefreshing, setBackgroundRefreshing] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState(null);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -95,6 +99,7 @@ export default function PersonnelDirectory() {
 
   const [detailsUser, setDetailsUser] = useState(null);
   const [detailsModalClosing, setDetailsModalClosing] = useState(false);
+  const [detailsSchoolHeads, setDetailsSchoolHeads] = useState({ loading: false, items: [], error: null });
 
   const [deactivateUser, setDeactivateUser] = useState(null);
   const [deactivateModalClosing, setDeactivateModalClosing] = useState(false);
@@ -117,6 +122,7 @@ export default function PersonnelDirectory() {
   const [activateSubmitting, setActivateSubmitting] = useState(false);
   const [showActivateConfirm, setShowActivateConfirm] = useState(false);
   const [kpiModalStat, setKpiModalStat] = useState(null); // 'total'|'approved'|'rejected'|'inactive'
+  const [kpiModalClosing, setKpiModalClosing] = useState(false);
   const filteredPersonnel = React.useMemo(() => {
     let list = personnel;
     if (statusFilter !== "all") {
@@ -172,31 +178,77 @@ export default function PersonnelDirectory() {
     setCurrentPage(p);
   };
 
-  const fetchPersonnel = useCallback(async () => {
+  const fetchPersonnel = useCallback(async ({ silent = false } = {}) => {
+    if (silent) setBackgroundRefreshing(true);
+    else setLoading(true);
     try {
       // Show only personnel users (administrative_officer role). School Heads have a dedicated tab.
       const data = await apiRequest("/admin/personnel?role=administrative_officer", { auth: true });
       setPersonnel(Array.isArray(data?.personnel) ? data.personnel : []);
+      setLastRefreshedAt(new Date().toISOString());
     } catch (err) {
-      showToast.error(err?.message || "Failed to load personnel.");
-      setPersonnel([]);
+      if (!silent) {
+        showToast.error(err?.message || "Failed to load personnel.");
+        setPersonnel([]);
+      }
     } finally {
-      setLoading(false);
+      if (silent) setBackgroundRefreshing(false);
+      else setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    fetchPersonnel();
+    fetchPersonnel({ silent: false });
   }, [fetchPersonnel]);
+
+  // Auto-refresh in the background so personnel profile edits appear without manual refresh.
+  useEffect(() => {
+    if (!autoRefreshEnabled) return undefined;
+
+    const intervalId = setInterval(() => {
+      if (document.hidden) return;
+      fetchPersonnel({ silent: true });
+    }, 10000);
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) fetchPersonnel({ silent: true });
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [autoRefreshEnabled, fetchPersonnel]);
 
   const handleCloseDetails = useCallback(() => {
     setDetailsModalClosing(true);
     setTimeout(() => {
       setDetailsModalClosing(false);
       setDetailsUser(null);
+      setDetailsSchoolHeads({ loading: false, items: [], error: null });
     }, 200);
   }, []);
+
+  const loadSchoolHeadsForUser = useCallback(async (userId) => {
+    if (!userId) return;
+    setDetailsSchoolHeads((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const res = await apiRequest(`/admin/users/${userId}/school-heads`, { auth: true });
+      const list = Array.isArray(res?.school_heads) ? res.school_heads : [];
+      setDetailsSchoolHeads({ loading: false, items: list, error: null });
+    } catch (err) {
+      setDetailsSchoolHeads({ loading: false, items: [], error: err?.message || "Failed to load assigned School Head(s)." });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (detailsUser?.role === "administrative_officer") {
+      loadSchoolHeadsForUser(detailsUser.id);
+    } else {
+      setDetailsSchoolHeads({ loading: false, items: [], error: null });
+    }
+  }, [detailsUser?.id, detailsUser?.role, loadSchoolHeadsForUser]);
 
   const handleOpenActivate = (user) => {
     setActivateRemarks("");
@@ -225,7 +277,7 @@ export default function PersonnelDirectory() {
       });
       showToast.success(`Account activated: ${activateUser.name}`);
       handleCloseActivate();
-      await fetchPersonnel();
+      await fetchPersonnel({ silent: true });
     } catch (err) {
       showToast.error(err?.message || "Failed to activate account.");
     } finally {
@@ -259,7 +311,7 @@ export default function PersonnelDirectory() {
       });
       showToast.success(`Account deactivated: ${deactivateUser.name}`);
       handleCloseDeactivate();
-      await fetchPersonnel();
+      await fetchPersonnel({ silent: true });
     } catch (err) {
       showToast.error(err?.message || "Failed to deactivate account.");
     } finally {
@@ -299,7 +351,7 @@ export default function PersonnelDirectory() {
       });
       showToast.success(`Account approved: ${approveUser.name}`);
       handleCloseApprove();
-      await fetchPersonnel();
+      await fetchPersonnel({ silent: true });
     } catch (err) {
       showToast.error(err?.message || "Failed to approve account.");
     } finally {
@@ -329,7 +381,7 @@ export default function PersonnelDirectory() {
       });
       showToast.success(`User deleted: ${deleteUser.name}`);
       handleCloseDelete();
-      await fetchPersonnel();
+      await fetchPersonnel({ silent: true });
     } catch (err) {
       showToast.error(err?.message || "Failed to delete user.");
     } finally {
@@ -394,14 +446,23 @@ export default function PersonnelDirectory() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [activateUser, activateSubmitting, showActivateConfirm, handleCloseActivate]);
 
+  const handleCloseKpi = useCallback(() => {
+    if (kpiModalClosing) return;
+    setKpiModalClosing(true);
+    setTimeout(() => {
+      setKpiModalClosing(false);
+      setKpiModalStat(null);
+    }, 200);
+  }, [kpiModalClosing]);
+
   useEffect(() => {
     if (!kpiModalStat) return;
     const onKeyDown = (e) => {
-      if (e.key === "Escape") setKpiModalStat(null);
+      if (e.key === "Escape") handleCloseKpi();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [kpiModalStat]);
+  }, [kpiModalStat, handleCloseKpi]);
 
   return (
     <div className="personnel-dir-page page-transition-enter">
@@ -418,23 +479,39 @@ export default function PersonnelDirectory() {
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            className="personnel-dir-refresh-btn"
-            onClick={() => {
-              setLoading(true);
-              fetchPersonnel();
-            }}
-            disabled={loading}
-            aria-label="Refresh list"
-          >
-            {loading ? (
-              <FaSpinner className="spinner" aria-hidden="true" />
-            ) : (
-              <FaSync aria-hidden="true" />
-            )}
-            <span>Refresh</span>
-          </button>
+          <div className="personnel-dir-header-actions">
+            <button
+              type="button"
+              className="personnel-dir-refresh-btn"
+              onClick={() => fetchPersonnel({ silent: false })}
+              disabled={loading}
+              aria-label="Refresh list"
+            >
+              {loading ? (
+                <FaSpinner className="spinner" aria-hidden="true" />
+              ) : (
+                <FaSync aria-hidden="true" />
+              )}
+              <span>Refresh</span>
+            </button>
+
+            <label className="personnel-dir-auto-refresh">
+              <input
+                type="checkbox"
+                checked={autoRefreshEnabled}
+                onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
+              />
+              <span className="personnel-dir-auto-refresh-label">Auto-refresh</span>
+            </label>
+
+            <div className="personnel-dir-last-updated" aria-live="polite">
+              {backgroundRefreshing
+                ? "Updating…"
+                : lastRefreshedAt
+                  ? `Last updated: ${formatDateTime(lastRefreshedAt)}`
+                  : "—"}
+            </div>
+          </div>
         </div>
       </header>
 
@@ -527,15 +604,15 @@ export default function PersonnelDirectory() {
             aria-describedby="personnel-dir-kpi-modal-desc"
           >
             <div
-              className="personnel-dir-backdrop modal-backdrop-animation"
-              onClick={() => setKpiModalStat(null)}
-              onKeyDown={(e) => e.key === "Enter" && setKpiModalStat(null)}
+              className={`personnel-dir-backdrop modal-backdrop-animation${kpiModalClosing ? " exit" : ""}`}
+              onClick={handleCloseKpi}
+              onKeyDown={(e) => e.key === "Enter" && handleCloseKpi()}
               role="button"
               tabIndex={0}
               aria-label="Close"
             />
             <div className="personnel-dir-wrap personnel-dir-kpi-modal-wrap">
-              <div className="personnel-dir-modal personnel-dir-kpi-modal modal-content-animation">
+              <div className={`personnel-dir-modal personnel-dir-kpi-modal modal-content-animation${kpiModalClosing ? " exit" : ""}`}>
                 <header className="personnel-dir-modal-header">
                   <div className="personnel-dir-modal-header-text">
                     <h2 id="personnel-dir-kpi-modal-title" className="personnel-dir-modal-title">
@@ -551,7 +628,7 @@ export default function PersonnelDirectory() {
                   <button
                     type="button"
                     className="personnel-dir-modal-close"
-                    onClick={() => setKpiModalStat(null)}
+                    onClick={handleCloseKpi}
                     aria-label="Close"
                   >
                     ×
@@ -574,7 +651,7 @@ export default function PersonnelDirectory() {
                   </p>
                 </div>
                 <footer className="personnel-dir-modal-footer">
-                  <button type="button" className="personnel-dir-btn-close" onClick={() => setKpiModalStat(null)}>
+                  <button type="button" className="personnel-dir-btn-close" onClick={handleCloseKpi}>
                     Close
                   </button>
                 </footer>
@@ -1033,6 +1110,54 @@ export default function PersonnelDirectory() {
                         </div>
                       )}
                     </div>
+                  )}
+
+                  {detailsUser.role === "administrative_officer" && (
+                    <section className="school-head-accounts-assignments-section personnel-dir-school-heads-section">
+                      <h3 className="school-head-accounts-assignments-title">Assigned School Head(s)</h3>
+                      {detailsSchoolHeads.loading ? (
+                        <div className="school-head-accounts-assignments-loading">
+                          <FaSpinner className="spinner" aria-hidden="true" />
+                          <span>Loading…</span>
+                        </div>
+                      ) : detailsSchoolHeads.error ? (
+                        <p className="school-head-accounts-assignments-error">
+                          {detailsSchoolHeads.error}
+                        </p>
+                      ) : detailsSchoolHeads.items.length === 0 ? (
+                        <p className="school-head-accounts-assignments-empty">
+                          No School Head is currently assigned to this Administrative Officer.
+                        </p>
+                      ) : (
+                        <ul className="school-head-accounts-assignments-list">
+                          {detailsSchoolHeads.items.map((sh) => (
+                            <li key={sh.id} className="school-head-accounts-assignments-item personnel-dir-school-head-item">
+                              <div className="school-head-accounts-name-cell">
+                                <div className="school-head-accounts-avatar" aria-hidden="true">
+                                  <div className="school-head-accounts-avatar-placeholder">
+                                    {getInitials(sh.name)}
+                                  </div>
+                                </div>
+                                <div className="school-head-accounts-assignments-text">
+                                  <div className="school-head-accounts-assignments-name" title={sh.name}>
+                                    {sh.name}
+                                  </div>
+                                  <div className="school-head-accounts-assignments-meta">
+                                    <span title={sh.school_name || "—"}>{sh.school_name || "—"}</span>
+                                    {sh.position && (
+                                      <>
+                                        <span aria-hidden="true"> · </span>
+                                        <span title={sh.position}>{sh.position}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
                   )}
 
                   <dl className="personnel-dir-details-grid personnel-dir-details-grid-footer">

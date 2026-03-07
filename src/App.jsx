@@ -20,6 +20,7 @@ import Layout from "./layout/Layout";
 import AdminOfficerDashboard from "./pages/dashboard/AdminOfficerDashboard";
 import TaskDetail from "./pages/dashboard/TaskDetail";
 import Timeline from "./pages/dashboard/Timeline";
+import CalendarPage from "./pages/dashboard/Calendar";
 import TaskList from "./pages/dashboard/TaskList";
 import CreateTask from "./pages/dashboard/CreateTask";
 import EditTask from "./pages/dashboard/EditTask";
@@ -32,8 +33,17 @@ import CreateSchoolHead from "./pages/dashboard/CreateSchoolHead";
 import SchoolHeadAccounts from "./pages/dashboard/SchoolHeadAccounts";
 import Profile from "./pages/dashboard/Profile";
 import MonitorOfficers from "./pages/dashboard/MonitorOfficers";
+import CentralAdminSettings from "./pages/dashboard/CentralAdminSettings";
+import ActivityLogs from "./pages/dashboard/ActivityLogs";
+import CentralAdminDashboard from "./pages/dashboard/CentralAdminDashboard";
 import InDevelopmentPlaceholder from "./components/InDevelopmentPlaceholder";
 import SchoolHeadValidations from "./pages/dashboard/SchoolHeadValidations";
+import SchoolHeadValidationReport from "./pages/dashboard/SchoolHeadValidationReport";
+import SchoolHeadTaskHistory from "./pages/dashboard/SchoolHeadTaskHistory";
+import CreatePersonalTask from "./pages/dashboard/CreatePersonalTask";
+import Submissions from "./pages/dashboard/Submissions";
+import FilesArchive from "./pages/dashboard/FilesArchive";
+import PerformanceReport from "./pages/dashboard/PerformanceReport";
 
 function AuthBootstrap({ children }) {
   const { bootstrapped } = useAuth();
@@ -104,7 +114,14 @@ const router = createBrowserRouter(
       />
 
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <Route path="profile" element={<Profile />} />
+        <Route
+          path="profile"
+          element={
+            <RoleRoute allowRoles={["administrative_officer", "school_head"]}>
+              <Profile />
+            </RoleRoute>
+          }
+        />
         <Route
           path="dashboard"
           element={
@@ -125,10 +142,7 @@ const router = createBrowserRouter(
           path="central-admin"
           element={
             <RoleRoute allowRoles={["central_admin"]}>
-              <InDevelopmentPlaceholder
-                title="Dashboard"
-                description="Central admin overview, pending registrations, and task management summary will appear here. This section will be available in a future release."
-              />
+              <CentralAdminDashboard />
             </RoleRoute>
           }
         />
@@ -205,13 +219,10 @@ const router = createBrowserRouter(
           }
         />
         <Route
-          path="dashboard/my-tasks"
+          path="dashboard/personal-tasks/create"
           element={
             <RoleRoute allowRoles={["administrative_officer"]}>
-              <InDevelopmentPlaceholder
-                title="My tasks"
-                description="View and manage your assigned tasks. This section will be available in a future release."
-              />
+              <CreatePersonalTask />
             </RoleRoute>
           }
         />
@@ -232,13 +243,34 @@ const router = createBrowserRouter(
           }
         />
         <Route
+          path="dashboard/calendar"
+          element={
+            <RoleRoute allowRoles={["administrative_officer"]}>
+              <CalendarPage />
+            </RoleRoute>
+          }
+        />
+        <Route
           path="dashboard/submissions"
           element={
             <RoleRoute allowRoles={["administrative_officer"]}>
-              <InDevelopmentPlaceholder
-                title="My submissions"
-                description="View and track your submitted MOVs and input data. This section will be available in a future release."
-              />
+              <Submissions />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="dashboard/files-archive"
+          element={
+            <RoleRoute allowRoles={["administrative_officer"]}>
+              <FilesArchive />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="dashboard/reports"
+          element={
+            <RoleRoute allowRoles={["administrative_officer"]}>
+              <PerformanceReport />
             </RoleRoute>
           }
         />
@@ -251,13 +283,18 @@ const router = createBrowserRouter(
           }
         />
         <Route
+          path="school-head/validation-report"
+          element={
+            <RoleRoute allowRoles={["school_head"]}>
+              <SchoolHeadValidationReport />
+            </RoleRoute>
+          }
+        />
+        <Route
           path="school-head/task-history"
           element={
             <RoleRoute allowRoles={["school_head"]}>
-              <InDevelopmentPlaceholder
-                title="Task history"
-                description="View task and submission history for evaluation and reporting. This section will be available in a future release."
-              />
+              <SchoolHeadTaskHistory />
             </RoleRoute>
           }
         />
@@ -276,10 +313,7 @@ const router = createBrowserRouter(
           path="school-head/reports"
           element={
             <RoleRoute allowRoles={["school_head"]}>
-              <InDevelopmentPlaceholder
-                title="Reports"
-                description="Generate and export validation and performance reports. This section will be available in a future release."
-              />
+              <PerformanceReport />
             </RoleRoute>
           }
         />
@@ -295,10 +329,15 @@ const router = createBrowserRouter(
           path="central-admin/activity-logs"
           element={
             <RoleRoute allowRoles={["central_admin"]}>
-              <InDevelopmentPlaceholder
-                title="Activity logs"
-                description="View system activity and audit logs. This section will be available in a future release."
-              />
+              <ActivityLogs />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="central-admin/settings"
+          element={
+            <RoleRoute allowRoles={["central_admin"]}>
+              <CentralAdminSettings />
             </RoleRoute>
           }
         />

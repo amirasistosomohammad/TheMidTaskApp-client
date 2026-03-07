@@ -559,6 +559,213 @@
   margin-bottom: 1.25rem;
 }
 
+/* ===== School Head details: Assigned Administrative Officers ===== */
+.school-head-accounts-assignments-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--sidebar-border, #d1dae6);
+}
+
+.school-head-accounts-assignments-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.school-head-accounts-assignments-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.school-head-accounts-assignments-error {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--reject-red, #b91c1c);
+}
+
+.school-head-accounts-assignments-empty {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.school-head-accounts-assignments-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.school-head-accounts-assignments-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background: var(--sidebar-bg, #f3f4f8);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+}
+
+.school-head-accounts-assignments-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.school-head-accounts-assignments-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.school-head-accounts-assignments-meta {
+  font-size: 0.75rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.school-head-accounts-assignments-remove {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--reject-red, #b91c1c);
+  background: var(--background-white, #fff);
+  border: 1px solid var(--reject-red, #b91c1c);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.school-head-accounts-assignments-remove:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 0.08);
+  border-color: var(--reject-red, #b91c1c);
+  color: var(--reject-red, #b91c1c);
+  transform: translateY(-1px);
+}
+
+.school-head-accounts-assignments-remove:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.school-head-accounts-assignments-form {
+  margin-top: 0.75rem;
+}
+
+.school-head-accounts-assignments-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.school-head-accounts-assignments-select-row {
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.school-head-accounts-assignments-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--background-white, #fff);
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.school-head-accounts-assignments-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: var(--primary-blue, #0b558f);
+  border: 1px solid var(--primary-blue, #0b558f);
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    transform 0.15s ease;
+}
+
+.school-head-accounts-assignments-add-btn:hover:not(:disabled) {
+  background: var(--primary-blue-dark, #094a75);
+  border-color: var(--primary-blue-dark, #094a75);
+  transform: translateY(-1px);
+}
+
+.school-head-accounts-assignments-add-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Add School Head modal: AO assign section (matches view details – corporate / government style) */
+.school-head-add-assignments-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--sidebar-border, #d1dae6);
+}
+
+.school-head-add-assignments-section .school-head-accounts-assignments-title {
+  margin-bottom: 0.35rem;
+}
+
+.school-head-add-assignments-required {
+  color: var(--reject-red, #b91c1c);
+  font-weight: 600;
+}
+
+.school-head-add-assignments-optional {
+  color: var(--footer-text, #4a5568);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.school-head-add-assignments-hint {
+  margin: 0 0 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.45;
+}
+
+@media (max-width: 767.98px) {
+  .school-head-accounts-header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .school-head-accounts-btn-add {
+    width: 100%;
+    justify-content: center;
+    min-height: 2.75rem;
+  }
+
+  .school-head-accounts-header-actions .personnel-dir-refresh-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 575.98px) {
   .school-head-accounts-empty {
     padding: 2.5rem 1.25rem !important;

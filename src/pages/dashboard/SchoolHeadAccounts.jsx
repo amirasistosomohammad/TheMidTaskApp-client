@@ -99,6 +99,15 @@ export default function SchoolHeadAccounts() {
   const [personnel, setPersonnel] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailsUser, setDetailsUser] = useState(null);
+  const [detailsAssignments, setDetailsAssignments] = useState({
+    loading: false,
+    items: [],
+    error: null,
+  });
+  const [availableAos, setAvailableAos] = useState([]);
+  const [availableAosLoading, setAvailableAosLoading] = useState(false);
+  const [selectedAoId, setSelectedAoId] = useState("");
+  const [assignSubmitting, setAssignSubmitting] = useState(false);
   const [detailsModalClosing, setDetailsModalClosing] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addModalClosing, setAddModalClosing] = useState(false);
@@ -126,11 +135,15 @@ export default function SchoolHeadAccounts() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [credentials, setCredentials] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [addModalAosToAssign, setAddModalAosToAssign] = useState([]);
+  const [addModalSelectedAoId, setAddModalSelectedAoId] = useState("");
+  const [addModalAosLoading, setAddModalAosLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [kpiModalStat, setKpiModalStat] = useState(null);
+  const [kpiModalClosing, setKpiModalClosing] = useState(false);
   const [deactivateUser, setDeactivateUser] = useState(null);
   const [deactivateModalClosing, setDeactivateModalClosing] = useState(false);
   const [deactivateRemarks, setDeactivateRemarks] = useState("");
@@ -211,13 +224,117 @@ export default function SchoolHeadAccounts() {
     fetchData();
   }, [fetchData]);
 
+  const loadAssignmentsForSchoolHead = useCallback(
+    async (schoolHeadId) => {
+      if (!schoolHeadId) return;
+      setDetailsAssignments((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const res = await apiRequest(`/admin/school-heads/${schoolHeadId}/aos`, { auth: true });
+        const list = Array.isArray(res?.administrative_officers) ? res.administrative_officers : [];
+        setDetailsAssignments({ loading: false, items: list, error: null });
+      } catch (err) {
+        setDetailsAssignments({ loading: false, items: [], error: err?.message || "Failed to load assignments." });
+      }
+    },
+    []
+  );
+
+  const loadAvailableAos = useCallback(async () => {
+    setAvailableAosLoading(true);
+    try {
+      const res = await apiRequest("/admin/personnel?status=active&role=administrative_officer", { auth: true });
+      const list = Array.isArray(res?.personnel) ? res.personnel : [];
+      setAvailableAos(list);
+    } catch (err) {
+      showToast.error(err?.message || "Failed to load Administrative Officers.");
+      setAvailableAos([]);
+    } finally {
+      setAvailableAosLoading(false);
+    }
+  }, []);
+
+  const loadAvailableAosForAddModal = useCallback(async () => {
+    setAddModalAosLoading(true);
+    try {
+      const res = await apiRequest("/admin/personnel?status=active&role=administrative_officer", { auth: true });
+      const list = Array.isArray(res?.personnel) ? res.personnel : [];
+      setAvailableAos(list);
+    } catch (err) {
+      showToast.error(err?.message || "Failed to load Administrative Officers.");
+      setAvailableAos([]);
+    } finally {
+      setAddModalAosLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (addModalOpen) {
+      loadAvailableAosForAddModal();
+    }
+  }, [addModalOpen, loadAvailableAosForAddModal]);
+
+  const handleOpenDetails = useCallback(
+    (user) => {
+      if (!user) return;
+      setDetailsUser(user);
+      setSelectedAoId("");
+      loadAssignmentsForSchoolHead(user.id);
+      loadAvailableAos();
+    },
+    [loadAssignmentsForSchoolHead, loadAvailableAos]
+  );
+
   const handleCloseDetails = useCallback(() => {
     setDetailsModalClosing(true);
     setTimeout(() => {
       setDetailsModalClosing(false);
       setDetailsUser(null);
+      setDetailsAssignments({ loading: false, items: [], error: null });
+      setSelectedAoId("");
     }, 200);
   }, []);
+
+  const handleAssignAo = useCallback(
+    async (e) => {
+      e?.preventDefault();
+      if (!detailsUser || !selectedAoId) return;
+      setAssignSubmitting(true);
+      try {
+        const res = await apiRequest(`/admin/school-heads/${detailsUser.id}/aos`, {
+          method: "POST",
+          auth: true,
+          body: { ao_id: Number(selectedAoId) },
+        });
+        const list = Array.isArray(res?.administrative_officers) ? res.administrative_officers : [];
+        setDetailsAssignments({ loading: false, items: list, error: null });
+        showToast.success("Administrative Officer assigned successfully.");
+        setSelectedAoId("");
+      } catch (err) {
+        showToast.error(err?.message || "Failed to assign Administrative Officer.");
+      } finally {
+        setAssignSubmitting(false);
+      }
+    },
+    [detailsUser, selectedAoId]
+  );
+
+  const handleRemoveAo = useCallback(
+    async (aoId) => {
+      if (!detailsUser || !aoId) return;
+      try {
+        await apiRequest(`/admin/school-heads/${detailsUser.id}/aos/${aoId}`, {
+          method: "DELETE",
+          auth: true,
+        });
+        // Refresh assignments list after removal.
+        loadAssignmentsForSchoolHead(detailsUser.id);
+        showToast.success("Assignment removed.");
+      } catch (err) {
+        showToast.error(err?.message || "Failed to remove assignment.");
+      }
+    },
+    [detailsUser, loadAssignmentsForSchoolHead]
+  );
 
   const validatePassword = (value) => {
     const validation = {
@@ -285,8 +402,8 @@ export default function SchoolHeadAccounts() {
       !!(f.position || "").trim() ||
       !!(f.division || "").trim() ||
       !!(f.school_name || "").trim();
-    return hasText || !!avatarFile;
-  }, [addForm, avatarFile]);
+    return hasText || !!avatarFile || addModalAosToAssign.length > 0;
+  }, [addForm, avatarFile, addModalAosToAssign.length]);
 
   const handleGeneratePassword = () => {
     const pwd = generatePassword();
@@ -306,6 +423,7 @@ export default function SchoolHeadAccounts() {
     else if (!/[A-Za-z]/.test(addForm.password) || !/[0-9]/.test(addForm.password)) {
       next.password = "Password must include at least one letter and one number.";
     }
+    if (addModalAosToAssign.length === 0) next.assignments = "At least one Administrative Officer must be assigned.";
     if (avatarFile && avatarFile.size > 2 * 1024 * 1024) next.avatar = "Image must be 2MB or less.";
     if (avatarFile && !/^image\/(jpeg|jpg|png|gif|webp)$/i.test(avatarFile.type)) next.avatar = "Use JPEG, PNG, GIF, or WebP.";
     setAddErrors(next);
@@ -338,6 +456,21 @@ export default function SchoolHeadAccounts() {
 
   const handleAddConfirmCancel = () => setShowAddConfirm(false);
 
+  const handleAddModalAddAo = (e) => {
+    e?.preventDefault();
+    if (!addModalSelectedAoId) return;
+    const ao = availableAos.find((a) => Number(a.id) === Number(addModalSelectedAoId));
+    if (!ao || addModalAosToAssign.some((a) => Number(a.id) === Number(ao.id))) return;
+    setAddModalAosToAssign((prev) => [...prev, { id: ao.id, name: ao.name, school_name: ao.school_name ?? "", position: ao.position ?? "" }]);
+    setAddModalSelectedAoId("");
+    if (addErrors.assignments) setAddErrors((prev) => ({ ...prev, assignments: null }));
+  };
+
+  const handleAddModalRemoveAo = (aoId) => {
+    setAddModalAosToAssign((prev) => prev.filter((a) => Number(a.id) !== Number(aoId)));
+    if (addErrors.assignments) setAddErrors((prev) => ({ ...prev, assignments: null }));
+  };
+
   const handleAddConfirmSubmit = async () => {
     setAddSubmitting(true);
     setCredentials(null);
@@ -361,6 +494,19 @@ export default function SchoolHeadAccounts() {
         const fd = new FormData();
         fd.append("avatar", avatarFile);
         await apiRequestFormData(`/admin/users/${userId}/avatar`, { method: "POST", formData: fd, auth: true });
+      }
+      if (userId && addModalAosToAssign.length > 0) {
+        for (const ao of addModalAosToAssign) {
+          try {
+            await apiRequest(`/admin/school-heads/${userId}/aos`, {
+              method: "POST",
+              auth: true,
+              body: { ao_id: Number(ao.id) },
+            });
+          } catch (assignErr) {
+            showToast.error(assignErr?.message || `Could not assign ${ao.name}. You can assign later from the School Head details.`);
+          }
+        }
       }
       setShowAddConfirm(false);
       setCredentials(res.credentials || { email: res.user?.email, password: addForm.password });
@@ -415,6 +561,8 @@ export default function SchoolHeadAccounts() {
       setPasswordValidation({ minLength: false, hasLetter: false, hasNumber: false });
       setShowPasswordCriteria(false);
       setCredentials(null);
+      setAddModalAosToAssign([]);
+      setAddModalSelectedAoId("");
     }, 200);
   }, [clearAvatar]);
 
@@ -506,6 +654,21 @@ export default function SchoolHeadAccounts() {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [deleteUser, deleteSubmitting, showDeleteConfirm, handleCloseDelete]);
+
+  useEffect(() => {
+    if (!kpiModalStat) return;
+    const onKeyDown = (e) => {
+      if (e.key !== "Escape") return;
+      if (kpiModalClosing) return;
+      setKpiModalClosing(true);
+      setTimeout(() => {
+        setKpiModalClosing(false);
+        setKpiModalStat(null);
+      }, 200);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [kpiModalStat, kpiModalClosing]);
 
   const handleOpenDeactivate = (user) => {
     setDeactivateRemarks("");
@@ -661,13 +824,24 @@ export default function SchoolHeadAccounts() {
         </div>
       )}
 
-      {/* KPI full count modal */}
+      {/* KPI full count modal – smooth close animation */}
       {kpiModalStat &&
         createPortal(
           <div className="personnel-dir-overlay personnel-dir-kpi-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="school-head-kpi-modal-title" aria-describedby="school-head-kpi-modal-desc">
-            <div className="personnel-dir-backdrop modal-backdrop-animation" onClick={() => setKpiModalStat(null)} onKeyDown={(e) => e.key === "Enter" && setKpiModalStat(null)} role="button" tabIndex={0} aria-label="Close" />
+            <div
+              className={`personnel-dir-backdrop modal-backdrop-animation${kpiModalClosing ? " exit" : ""}`}
+              onClick={() => {
+                if (kpiModalClosing) return;
+                setKpiModalClosing(true);
+                setTimeout(() => { setKpiModalClosing(false); setKpiModalStat(null); }, 200);
+              }}
+              onKeyDown={(e) => e.key === "Enter" && !kpiModalClosing && (setKpiModalClosing(true), setTimeout(() => { setKpiModalClosing(false); setKpiModalStat(null); }, 200))}
+              role="button"
+              tabIndex={0}
+              aria-label="Close"
+            />
             <div className="personnel-dir-wrap personnel-dir-kpi-modal-wrap">
-              <div className="personnel-dir-modal personnel-dir-kpi-modal modal-content-animation">
+              <div className={`personnel-dir-modal personnel-dir-kpi-modal modal-content-animation${kpiModalClosing ? " exit" : ""}`}>
                 <header className="personnel-dir-modal-header">
                   <div className="personnel-dir-modal-header-text">
                     <h2 id="school-head-kpi-modal-title" className="personnel-dir-modal-title">
@@ -676,7 +850,18 @@ export default function SchoolHeadAccounts() {
                     </h2>
                     <p id="school-head-kpi-modal-desc" className="personnel-dir-modal-subtitle">Full count recorded in the system</p>
                   </div>
-                  <button type="button" className="personnel-dir-modal-close" onClick={() => setKpiModalStat(null)} aria-label="Close">×</button>
+                  <button
+                    type="button"
+                    className="personnel-dir-modal-close"
+                    onClick={() => {
+                      if (kpiModalClosing) return;
+                      setKpiModalClosing(true);
+                      setTimeout(() => { setKpiModalClosing(false); setKpiModalStat(null); }, 200);
+                    }}
+                    aria-label="Close"
+                  >
+                    ×
+                  </button>
                 </header>
                 <div className="personnel-dir-modal-body personnel-dir-kpi-modal-body">
                   <div className="personnel-dir-kpi-modal-value">
@@ -688,7 +873,17 @@ export default function SchoolHeadAccounts() {
                   </p>
                 </div>
                 <footer className="personnel-dir-modal-footer">
-                  <button type="button" className="personnel-dir-btn-close" onClick={() => setKpiModalStat(null)}>Close</button>
+                  <button
+                    type="button"
+                    className="personnel-dir-btn-close"
+                    onClick={() => {
+                      if (kpiModalClosing) return;
+                      setKpiModalClosing(true);
+                      setTimeout(() => { setKpiModalClosing(false); setKpiModalStat(null); }, 200);
+                    }}
+                  >
+                    Close
+                  </button>
                 </footer>
               </div>
             </div>
@@ -774,8 +969,13 @@ export default function SchoolHeadAccounts() {
                           className="personnel-dir-personnel-card"
                           role="button"
                           tabIndex={0}
-                          onClick={() => !isActionDisabled && setDetailsUser(user)}
-                          onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && !isActionDisabled) { e.preventDefault(); setDetailsUser(user); } }}
+                          onClick={() => !isActionDisabled && handleOpenDetails(user)}
+                          onKeyDown={(e) => {
+                            if ((e.key === "Enter" || e.key === " ") && !isActionDisabled) {
+                              e.preventDefault();
+                              handleOpenDetails(user);
+                            }
+                          }}
                           aria-label={`View details for ${user.name}`}
                         >
                           <div className="personnel-dir-card-top-strip">
@@ -788,7 +988,17 @@ export default function SchoolHeadAccounts() {
                             )}
                           </div>
                           <div className="personnel-dir-card-actions">
-                            <button type="button" className="personnel-dir-card-btn personnel-dir-card-btn-view" onClick={(e) => { e.stopPropagation(); setDetailsUser(user); }} disabled={isActionDisabled} aria-label={`View ${user.name}`} title="View">
+                            <button
+                              type="button"
+                              className="personnel-dir-card-btn personnel-dir-card-btn-view"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenDetails(user);
+                              }}
+                              disabled={isActionDisabled}
+                              aria-label={`View ${user.name}`}
+                              title="View"
+                            >
                               <FaEye aria-hidden="true" />
                             </button>
                             {user.status === "active" && (
@@ -985,6 +1195,110 @@ export default function SchoolHeadAccounts() {
                       )}
                     </div>
                   )}
+
+                  <section className="school-head-accounts-assignments-section">
+                    <h3 className="school-head-accounts-assignments-title">Assigned Administrative Officers</h3>
+                    {detailsAssignments.loading ? (
+                      <div className="school-head-accounts-assignments-loading">
+                        <FaSpinner className="spinner" aria-hidden="true" />
+                        <span>Loading assignments…</span>
+                      </div>
+                    ) : detailsAssignments.error ? (
+                      <p className="school-head-accounts-assignments-error">
+                        {detailsAssignments.error}
+                      </p>
+                    ) : (
+                      <>
+                        {detailsAssignments.items.length === 0 ? (
+                          <p className="school-head-accounts-assignments-empty">
+                            No Administrative Officers are currently assigned to this School Head.
+                          </p>
+                        ) : (
+                          <ul className="school-head-accounts-assignments-list">
+                            {detailsAssignments.items.map((ao) => (
+                              <li key={ao.id} className="school-head-accounts-assignments-item">
+                                <div className="school-head-accounts-name-cell">
+                                  <div className="school-head-accounts-avatar" aria-hidden="true">
+                                    <div className="school-head-accounts-avatar-placeholder">
+                                      {getInitials(ao.name)}
+                                    </div>
+                                  </div>
+                                  <div className="school-head-accounts-assignments-text">
+                                    <div className="school-head-accounts-assignments-name" title={ao.name}>
+                                      {ao.name}
+                                    </div>
+                                    <div className="school-head-accounts-assignments-meta">
+                                      <span title={ao.school_name || "—"}>
+                                        {ao.school_name || "—"}
+                                      </span>
+                                      {ao.position && (
+                                        <>
+                                          <span aria-hidden="true"> · </span>
+                                          <span title={ao.position}>{ao.position}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="school-head-accounts-assignments-remove"
+                                  onClick={() => handleRemoveAo(ao.id)}
+                                >
+                                  Remove
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        <form
+                          className="school-head-accounts-assignments-form"
+                          onSubmit={handleAssignAo}
+                        >
+                          <label className="school-head-accounts-assignments-label">
+                            <span>Assign Administrative Officer</span>
+                            <div className="school-head-accounts-assignments-select-row">
+                              <select
+                                className="school-head-accounts-assignments-select"
+                                value={selectedAoId}
+                                onChange={(e) => setSelectedAoId(e.target.value)}
+                                disabled={assignSubmitting || availableAosLoading}
+                              >
+                                <option value="">
+                                  {availableAosLoading
+                                    ? "Loading Administrative Officers…"
+                                    : "Select Administrative Officer"}
+                                </option>
+                                {availableAos.map((ao) => (
+                                  <option key={ao.id} value={ao.id}>
+                                    {ao.name} {ao.school_name ? `· ${ao.school_name}` : ""}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="submit"
+                                className="school-head-accounts-assignments-add-btn"
+                                disabled={!selectedAoId || assignSubmitting}
+                              >
+                                {assignSubmitting ? (
+                                  <>
+                                    <FaSpinner className="spinner" aria-hidden="true" />
+                                    <span>Assigning…</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <FaUserGraduate aria-hidden="true" />
+                                    <span>Assign AO</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </label>
+                        </form>
+                      </>
+                    )}
+                  </section>
 
                   <dl className="personnel-dir-details-grid personnel-dir-details-grid-footer">
                     <div className="personnel-dir-details-row">
@@ -1258,6 +1572,98 @@ export default function SchoolHeadAccounts() {
                           disabled={addSubmitting}
                         />
                       </div>
+
+                      <section className="school-head-accounts-assignments-section school-head-add-assignments-section">
+                        <h3 className="school-head-accounts-assignments-title">
+                          Assigned Administrative Officers <span className="school-head-add-assignments-required">*</span>
+                        </h3>
+                        <p className="school-head-add-assignments-hint">
+                          Assign at least one Administrative Officer to this School Head. You can add or remove assignments later from the School Head details.
+                        </p>
+                        {addErrors.assignments && (
+                          <div className="school-head-add-field-error-wrapper school-head-add-field-error-visible">
+                            <div className="school-head-add-field-error-inner">
+                              <p className="school-head-add-field-error-msg">{addErrors.assignments}</p>
+                            </div>
+                          </div>
+                        )}
+                        {addModalAosToAssign.length === 0 ? (
+                          <p className="school-head-accounts-assignments-empty">
+                            No Administrative Officers selected. Use the dropdown below to assign.
+                          </p>
+                        ) : (
+                          <ul className="school-head-accounts-assignments-list">
+                            {addModalAosToAssign.map((ao) => (
+                              <li key={ao.id} className="school-head-accounts-assignments-item">
+                                <div className="school-head-accounts-name-cell">
+                                  <div className="school-head-accounts-avatar" aria-hidden="true">
+                                    <div className="school-head-accounts-avatar-placeholder">
+                                      {getInitials(ao.name)}
+                                    </div>
+                                  </div>
+                                  <div className="school-head-accounts-assignments-text">
+                                    <div className="school-head-accounts-assignments-name" title={ao.name}>
+                                      {ao.name}
+                                    </div>
+                                    <div className="school-head-accounts-assignments-meta">
+                                      <span title={ao.school_name || "—"}>{ao.school_name || "—"}</span>
+                                      {ao.position && (
+                                        <>
+                                          <span aria-hidden="true"> · </span>
+                                          <span title={ao.position}>{ao.position}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="school-head-accounts-assignments-remove"
+                                  onClick={() => handleAddModalRemoveAo(ao.id)}
+                                  disabled={addSubmitting}
+                                >
+                                  Remove
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        <div className="school-head-accounts-assignments-form">
+                          <label className="school-head-accounts-assignments-label">
+                            <span>Add Administrative Officer</span>
+                            <div className="school-head-accounts-assignments-select-row">
+                              <select
+                                className="school-head-accounts-assignments-select"
+                                value={addModalSelectedAoId}
+                                onChange={(e) => setAddModalSelectedAoId(e.target.value)}
+                                disabled={addSubmitting || addModalAosLoading}
+                              >
+                                <option value="">
+                                  {addModalAosLoading
+                                    ? "Loading Administrative Officers…"
+                                    : "Select Administrative Officer"}
+                                </option>
+                                {availableAos
+                                  .filter((ao) => !addModalAosToAssign.some((a) => Number(a.id) === Number(ao.id)))
+                                  .map((ao) => (
+                                    <option key={ao.id} value={ao.id}>
+                                      {ao.name} {ao.school_name ? ` · ${ao.school_name}` : ""}
+                                    </option>
+                                  ))}
+                              </select>
+                              <button
+                                type="button"
+                                className="school-head-accounts-assignments-add-btn"
+                                disabled={!addModalSelectedAoId || addSubmitting}
+                                onClick={handleAddModalAddAo}
+                              >
+                                <FaUserGraduate aria-hidden="true" />
+                                <span>Assign AO</span>
+                              </button>
+                            </div>
+                          </label>
+                        </div>
+                      </section>
                     </div>
                     <div className="account-approvals-action-footer">
                       <button type="button" className="account-approvals-details-btn-close" onClick={handleRequestCloseAddModal} disabled={addSubmitting}>

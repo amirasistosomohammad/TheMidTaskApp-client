@@ -1,0 +1,99 @@
+/* School Head Dashboard – corporate / government style, extends AdminOfficerDashboard.css */
+
+.sh-dashboard-page {
+  /* Uses .ao-dashboard-page from AdminOfficerDashboard.css */
+}
+
+/* KPI card as link – no underline, same look as other KPI cards */
+.sh-dashboard-kpi-row a.ao-dashboard-kpi-card {
+  text-decoration: none;
+  color: inherit;
+}
+
+.sh-dashboard-kpi-row a.ao-dashboard-kpi-card:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* KPI row: two cards (Pending validations, Assigned personnel) */
+.sh-dashboard-kpi-row {
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 767.98px) {
+  .sh-dashboard-kpi-row {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Quick actions – same layout as Central Admin */
+.sh-dashboard-actions {
+  padding: 1rem 1.25rem 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.sh-dashboard-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+  border: 1px solid transparent;
+  user-select: none;
+  color: inherit;
+}
+
+.sh-dashboard-btn-primary {
+  background: var(--primary-blue, #0b558f);
+  border-color: var(--primary-blue, #0b558f);
+  color: #fff;
+}
+
+.sh-dashboard-btn-primary:hover {
+  background: var(--primary-blue-dark, #094a75);
+  border-color: var(--primary-blue-dark, #094a75);
+  color: #fff;
+  transform: translateY(-1px);
+  text-decoration: none;
+  color: #fff;
+}
+
+.sh-dashboard-btn-outline {
+  background: var(--background-white, #fff);
+  border-color: var(--sidebar-border, #d1dae6);
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.sh-dashboard-btn-outline:hover {
+  background: var(--sidebar-bg, #eef2f7);
+  border-color: var(--primary-blue, #0b558f);
+  color: var(--primary-blue, #0b558f);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.sh-dashboard-btn:focus-visible {
+  outline: 2px solid var(--primary-blue, #0b558f);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767.98px) {
+  .sh-dashboard-actions {
+    padding: 1rem 1rem 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .sh-dashboard-actions {
+    grid-template-columns: 1fr;
+    padding: 1rem 1rem 1.25rem;
+  }
+}

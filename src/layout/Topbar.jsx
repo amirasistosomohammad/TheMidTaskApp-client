@@ -7,7 +7,7 @@ import LogoutConfirmModal from "../components/LogoutConfirmModal";
 import { getHomePathForUser } from "../utils/authRouting";
 import Logo from "../assets/images/logo.png";
 
-const Topbar = ({ onToggleSidebar }) => {
+const Topbar = ({ onToggleSidebar, appName, logoUrl, settingsLoading }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const triggerRef = useRef(null);
@@ -119,6 +119,8 @@ const Topbar = ({ onToggleSidebar }) => {
 
   const handleLogoutCancel = () => setShowLogoutConfirm(false);
 
+  const canAccessProfile = user?.role === "administrative_officer" || user?.role === "school_head";
+
   const getRoleDisplay = () => {
     if (!user?.role) return null;
     switch (user.role) {
@@ -137,9 +139,28 @@ const Topbar = ({ onToggleSidebar }) => {
     <>
       <nav className="sb-topnav navbar navbar-expand navbar-light">
         <div className="topbar-brand-wrap navbar-brand d-flex align-items-center flex-shrink-0">
-          <Link to={getHomePathForUser(user)} className="d-flex align-items-center text-decoration-none topbar-brand-link">
-            <img src={Logo} alt="" className="topbar-icon-logo me-2" aria-hidden="true" />
-            <span className="topbar-brand-text">MID-TASK APP</span>
+          <Link
+            to={getHomePathForUser(user)}
+            className="d-flex align-items-center text-decoration-none topbar-brand-link"
+          >
+            {settingsLoading ? (
+              <div className="topbar-brand-skeleton" aria-hidden="true">
+                <div className="topbar-brand-logo-skeleton" />
+                <div className="topbar-brand-text-skeleton" />
+              </div>
+            ) : (
+              <div className="topbar-brand-content">
+                <img
+                  src={logoUrl || Logo}
+                  alt={appName || "MID-TASK APP"}
+                  className="topbar-icon-logo me-2"
+                  aria-hidden="true"
+                />
+                <span className="topbar-brand-text">
+                  {appName || "MID-TASK APP"}
+                </span>
+              </div>
+            )}
           </Link>
         </div>
 
@@ -211,14 +232,16 @@ const Topbar = ({ onToggleSidebar }) => {
               )}
             </div>
             <div className="topbar-dropdown-divider" />
-            <Link
-              to="/profile"
-              className="topbar-dropdown-item"
-              onClick={closeUserMenu}
-            >
-              <FaCog size={14} className="me-2" />
-              Profile
-            </Link>
+            {canAccessProfile && (
+              <Link
+                to="/profile"
+                className="topbar-dropdown-item"
+                onClick={closeUserMenu}
+              >
+                <FaCog size={14} className="me-2" />
+                Profile
+              </Link>
+            )}
             <button
               type="button"
               className="topbar-dropdown-logout"

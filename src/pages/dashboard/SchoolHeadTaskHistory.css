@@ -1,0 +1,18 @@
+/* School Head Task History – uses Timeline.css for full layout; only overrides here */
+
+/* Read-only timeline item (no link, same look) */
+.timeline-item-readonly {
+  cursor: default;
+}
+
+.timeline-item-readonly:hover .timeline-item-content {
+  background: var(--sidebar-bg, #eef2f7);
+  border-color: var(--sidebar-border, #d1dae6);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Personnel label in meta line */
+.shth-item-personnel-label {
+  font-weight: 500;
+  color: var(--sidebar-heading-text, #5a6c7d);
+}

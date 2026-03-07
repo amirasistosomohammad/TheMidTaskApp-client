@@ -1,0 +1,100 @@
+/* My Tasks page – tab bar and panel, matches dashboard / government style */
+
+.my-tasks-page {
+  padding-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.my-tasks-header {
+  margin-bottom: 1rem;
+}
+
+/* Tabs – shared with AdminOfficerDashboard when showing Assigned | Personal */
+.ao-tabs-wrap {
+  width: 100%;
+  min-width: 0;
+}
+
+.ao-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+  padding: 0.25rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.ao-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--footer-text, #4a5568);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.ao-tab:hover {
+  background: var(--background-white, #fff);
+  color: var(--sidebar-text, #1e3a5f);
+  border-color: var(--sidebar-border, #d1dae6);
+}
+
+.ao-tab-active {
+  background: var(--background-white, #fff);
+  color: var(--primary-blue, #0b558f);
+  border-color: var(--primary-blue, #0b558f);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.ao-tab-icon {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.ao-tab-count {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--footer-text, #4a5568);
+  background: var(--sidebar-footer-bg, #e2e8f0);
+  border-radius: 999px;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.ao-tab-active .ao-tab-count {
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.12);
+  color: var(--primary-blue, #0b558f);
+}
+
+.ao-tab-panel {
+  outline: none;
+}
+
+.ao-tab-panel[hidden] {
+  display: none;
+}
+
+@media (max-width: 575.98px) {
+  .ao-tabs {
+    flex-direction: column;
+    margin-bottom: 1rem;
+  }
+
+  .ao-tab {
+    width: 100%;
+    justify-content: center;
+  }
+}

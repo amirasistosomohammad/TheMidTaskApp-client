@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { apiRequest } from "../../services/apiClient";
@@ -13,8 +13,11 @@ import {
   FaSync,
   FaSpinner,
   FaBell,
+  FaUserCheck,
+  FaUserEdit,
 } from "react-icons/fa";
 import "./AdminOfficerDashboard.css";
+import "./MyTasks.css";
 
 function formatDate(ymd) {
   if (!ymd) return "—";
@@ -48,8 +51,9 @@ export default function AdminOfficerDashboard() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({ pending: [], missing: [], submitted: [], completed: [] });
-   const [reminders, setReminders] = useState([]);
-   const [remindersLoading, setRemindersLoading] = useState(false);
+  const [reminders, setReminders] = useState([]);
+  const [remindersLoading, setRemindersLoading] = useState(false);
+  const [dashboardTab, setDashboardTab] = useState("assigned");
 
   const fetchDashboard = useCallback(async () => {
     if (user?.role !== "administrative_officer" || user?.status !== "active") {
@@ -111,6 +115,29 @@ export default function AdminOfficerDashboard() {
   const isActive = user?.status === "active";
   const showDashboard = isActive && user?.role === "administrative_officer";
 
+  const splitByPersonal = useMemo(() => {
+    const isPersonal = (ut) => ut?.task?.is_personal === true;
+    return {
+      assigned: {
+        pending: (data.pending || []).filter((ut) => !isPersonal(ut)),
+        missing: (data.missing || []).filter((ut) => !isPersonal(ut)),
+        submitted: (data.submitted || []).filter((ut) => !isPersonal(ut)),
+        completed: (data.completed || []).filter((ut) => !isPersonal(ut)),
+      },
+      personal: {
+        pending: (data.pending || []).filter(isPersonal),
+        missing: (data.missing || []).filter(isPersonal),
+        submitted: (data.submitted || []).filter(isPersonal),
+        completed: (data.completed || []).filter(isPersonal),
+      },
+    };
+  }, [data.pending, data.missing, data.submitted, data.completed]);
+
+  const assignedCount = splitByPersonal.assigned.pending.length + splitByPersonal.assigned.missing.length
+    + splitByPersonal.assigned.submitted.length + splitByPersonal.assigned.completed.length;
+  const personalCount = splitByPersonal.personal.pending.length + splitByPersonal.personal.missing.length
+    + splitByPersonal.personal.submitted.length + splitByPersonal.personal.completed.length;
+
   return (
     <div className="ao-dashboard-page page-transition-enter">
       <PersonnelAccountStatus />
@@ -126,7 +153,7 @@ export default function AdminOfficerDashboard() {
                 <div>
                   <h1 className="ao-dashboard-title">Dashboard</h1>
                   <p className="ao-dashboard-subtitle">
-                    Welcome, <strong>{user?.name ?? "User"}</strong>. Your task overview, pending items, and timeline summary.
+                    Overview of your current assignments, upcoming due dates, and recent activity.
                   </p>
                 </div>
               </div>
@@ -155,194 +182,334 @@ export default function AdminOfficerDashboard() {
             </div>
           ) : (
             <>
-              <section
-                className="ao-dashboard-reminders"
-                aria-label="Upcoming reminders and due-soon tasks"
-              >
-                <header className="ao-dashboard-reminders-header">
-                  <div className="ao-dashboard-reminders-title-wrap">
-                    <span className="ao-dashboard-reminders-icon" aria-hidden="true">
-                      <FaBell />
-                    </span>
-                    <div>
-                      <h2 className="ao-dashboard-reminders-title">Due soon</h2>
-                      <p className="ao-dashboard-reminders-subtitle">
-                        Tasks with approaching due dates. Reminders are created automatically based on your task timeline.
-                      </p>
+              <div className="ao-dashboard-top-grid">
+                <section
+                  className="ao-dashboard-card"
+                  aria-label="My task status summary"
+                >
+                  <header className="ao-dashboard-card-header">
+                    <div className="ao-dashboard-card-title-wrap">
+                      <span className="ao-dashboard-card-icon" aria-hidden="true">
+                        <FaTachometerAlt />
+                      </span>
+                      <div>
+                        <h2 className="ao-dashboard-card-title">My task status</h2>
+                        <p className="ao-dashboard-card-subtitle">
+                          Snapshot of your assigned and personal tasks.
+                        </p>
+                      </div>
                     </div>
+                  </header>
+                  <div className="ao-dashboard-kpi-grid ao-dashboard-kpi-grid-compact">
+                    <article
+                      className="ao-dashboard-kpi-card ao-dashboard-kpi-pending"
+                      aria-label={`Pending tasks: ${data.pending.length}`}
+                    >
+                      <div className="ao-dashboard-kpi-icon-wrap" aria-hidden="true">
+                        <FaClock className="ao-dashboard-kpi-icon" />
+                      </div>
+                      <div className="ao-dashboard-kpi-body">
+                        <p className="ao-dashboard-kpi-label">Pending</p>
+                        <p className="ao-dashboard-kpi-value">{data.pending.length}</p>
+                        <p className="ao-dashboard-kpi-hint">Due on or after today</p>
+                      </div>
+                    </article>
+                    <article
+                      className="ao-dashboard-kpi-card ao-dashboard-kpi-submitted"
+                      aria-label={`Submitted tasks: ${data.submitted.length}`}
+                    >
+                      <div className="ao-dashboard-kpi-icon-wrap" aria-hidden="true">
+                        <FaCheckCircle className="ao-dashboard-kpi-icon" />
+                      </div>
+                      <div className="ao-dashboard-kpi-body">
+                        <p className="ao-dashboard-kpi-label">Submitted for validation</p>
+                        <p className="ao-dashboard-kpi-value">{data.submitted.length}</p>
+                        <p className="ao-dashboard-kpi-hint">Awaiting School Head review</p>
+                      </div>
+                    </article>
+                    <article
+                      className="ao-dashboard-kpi-card ao-dashboard-kpi-missing"
+                      aria-label={`Missing (overdue): ${data.missing.length}`}
+                    >
+                      <div className="ao-dashboard-kpi-icon-wrap" aria-hidden="true">
+                        <FaExclamationTriangle className="ao-dashboard-kpi-icon" />
+                      </div>
+                      <div className="ao-dashboard-kpi-body">
+                        <p className="ao-dashboard-kpi-label">Missing (overdue)</p>
+                        <p className="ao-dashboard-kpi-value">{data.missing.length}</p>
+                        <p className="ao-dashboard-kpi-hint">Past due date</p>
+                      </div>
+                    </article>
+                    <article
+                      className="ao-dashboard-kpi-card ao-dashboard-kpi-completed"
+                      aria-label={`Completed: ${data.completed.length}`}
+                    >
+                      <div className="ao-dashboard-kpi-icon-wrap" aria-hidden="true">
+                        <FaCheckCircle className="ao-dashboard-kpi-icon" />
+                      </div>
+                      <div className="ao-dashboard-kpi-body">
+                        <p className="ao-dashboard-kpi-label">Completed</p>
+                        <p className="ao-dashboard-kpi-value">{data.completed.length}</p>
+                        <p className="ao-dashboard-kpi-hint">Submitted or done</p>
+                      </div>
+                    </article>
                   </div>
-                  {remindersLoading && (
-                    <span className="ao-dashboard-reminders-loading">
-                      <FaSpinner className="spinner" aria-hidden="true" />
-                      <span>Checking reminders…</span>
-                    </span>
-                  )}
-                </header>
-                {reminders.length === 0 ? (
-                  <p className="ao-dashboard-reminders-empty">
-                    You have no upcoming reminders at the moment.
-                  </p>
-                ) : (
-                  <ul className="ao-dashboard-reminders-list">
-                    {reminders.map((r) => {
-                      const userTask = r.user_task || {};
-                      const task = r.task || {};
-                      const dueLabel = userTask.due_date ? formatDate(userTask.due_date) : "—";
-                      let badge;
-                      if (r.days_before_due === 0) {
-                        badge = "Due today";
-                      } else if (r.days_before_due === 1) {
-                        badge = "Due in 1 day";
-                      } else if (typeof r.days_before_due === "number") {
-                        badge = `Due in ${r.days_before_due} days`;
-                      } else {
-                        badge = "Upcoming";
-                      }
-                      return (
-                        <li key={r.id} className="ao-dashboard-reminder-item">
-                          <div className="ao-dashboard-reminder-main">
-                            <p className="ao-dashboard-reminder-task">
-                              <span className="ao-dashboard-reminder-task-name">
-                                {task.name || "Task"}
-                              </span>
-                              <span className="ao-dashboard-reminder-badge">{badge}</span>
-                            </p>
-                            <p className="ao-dashboard-reminder-meta">
-                              <span className="ao-dashboard-reminder-label">Due date:</span>{" "}
-                              {dueLabel}
-                            </p>
-                          </div>
-                          {userTask.id && (
-                            <div className="ao-dashboard-reminder-actions">
-                              <Link
-                                to={`/dashboard/my-tasks/${userTask.id}`}
-                                className="ao-dashboard-reminder-link"
-                                onClick={() => handleReminderRead(r.id)}
-                              >
-                                View task
-                              </Link>
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </section>
+                </section>
 
-              <div className="ao-dashboard-kpi-grid">
-                <article className="ao-dashboard-kpi-card ao-dashboard-kpi-pending" aria-label={`Pending tasks: ${data.pending.length}`}>
-                  <div className="ao-dashboard-kpi-icon-wrap" aria-hidden="true">
-                    <FaClock className="ao-dashboard-kpi-icon" />
-                  </div>
-                  <div className="ao-dashboard-kpi-body">
-                    <p className="ao-dashboard-kpi-label">Pending</p>
-                    <p className="ao-dashboard-kpi-value">{data.pending.length}</p>
-                    <p className="ao-dashboard-kpi-hint">Due on or after today</p>
-                  </div>
-                </article>
-                <article className="ao-dashboard-kpi-card ao-dashboard-kpi-submitted" aria-label={`Submitted tasks: ${data.submitted.length}`}>
-                  <div className="ao-dashboard-kpi-icon-wrap" aria-hidden="true">
-                    <FaCheckCircle className="ao-dashboard-kpi-icon" />
-                  </div>
-                  <div className="ao-dashboard-kpi-body">
-                    <p className="ao-dashboard-kpi-label">Submitted for validation</p>
-                    <p className="ao-dashboard-kpi-value">{data.submitted.length}</p>
-                    <p className="ao-dashboard-kpi-hint">Awaiting School Head review</p>
-                  </div>
-                </article>
-                <article
-                  className="ao-dashboard-kpi-card ao-dashboard-kpi-missing"
-                  aria-label={`Missing (overdue): ${data.missing.length}`}
+                <section
+                  className="ao-dashboard-card"
+                  aria-label="Upcoming reminders and due-soon tasks"
                 >
-                  <div className="ao-dashboard-kpi-icon-wrap" aria-hidden="true">
-                    <FaExclamationTriangle className="ao-dashboard-kpi-icon" />
+                  <header className="ao-dashboard-card-header">
+                    <div className="ao-dashboard-card-title-wrap">
+                      <span className="ao-dashboard-card-icon" aria-hidden="true">
+                        <FaBell />
+                      </span>
+                      <div>
+                        <h2 className="ao-dashboard-card-title">Due soon</h2>
+                        <p className="ao-dashboard-card-subtitle">
+                          Tasks with approaching due dates. Reminders are created automatically based on your task
+                          timeline.
+                        </p>
+                      </div>
+                    </div>
+                    {remindersLoading && (
+                      <span className="ao-dashboard-reminders-loading">
+                        <FaSpinner className="spinner" aria-hidden="true" />
+                        <span>Checking reminders…</span>
+                      </span>
+                    )}
+                  </header>
+                  <div className="ao-dashboard-reminders-body">
+                    {reminders.length === 0 ? (
+                      <p className="ao-dashboard-reminders-empty">
+                        You have no upcoming reminders at the moment.
+                      </p>
+                    ) : (
+                      <ul className="ao-dashboard-reminders-list">
+                        {reminders.map((r) => {
+                          const userTask = r.user_task || {};
+                          const task = r.task || {};
+                          const dueLabel = userTask.due_date ? formatDate(userTask.due_date) : "—";
+                          let badge;
+                          if (r.days_before_due === 0) {
+                            badge = "Due today";
+                          } else if (r.days_before_due === 1) {
+                            badge = "Due in 1 day";
+                          } else if (typeof r.days_before_due === "number") {
+                            badge = `Due in ${r.days_before_due} days`;
+                          } else {
+                            badge = "Upcoming";
+                          }
+                          return (
+                            <li key={r.id} className="ao-dashboard-reminder-item">
+                              <div className="ao-dashboard-reminder-main">
+                                <p className="ao-dashboard-reminder-task">
+                                  <span className="ao-dashboard-reminder-task-name">
+                                    {task.name || "Task"}
+                                  </span>
+                                  <span className="ao-dashboard-reminder-badge">{badge}</span>
+                                </p>
+                                <p className="ao-dashboard-reminder-meta">
+                                  <span className="ao-dashboard-reminder-label">Due date:</span>{" "}
+                                  {dueLabel}
+                                </p>
+                              </div>
+                              {userTask.id && (
+                                <div className="ao-dashboard-reminder-actions">
+                                  <Link
+                                    to={`/dashboard/my-tasks/${userTask.id}`}
+                                    className="ao-dashboard-reminder-link"
+                                    onClick={() => handleReminderRead(r.id)}
+                                  >
+                                    View task
+                                  </Link>
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                   </div>
-                  <div className="ao-dashboard-kpi-body">
-                    <p className="ao-dashboard-kpi-label">Missing (overdue)</p>
-                    <p className="ao-dashboard-kpi-value">{data.missing.length}</p>
-                    <p className="ao-dashboard-kpi-hint">Past due date</p>
-                  </div>
-                </article>
-                <article
-                  className="ao-dashboard-kpi-card ao-dashboard-kpi-completed"
-                  aria-label={`Completed: ${data.completed.length}`}
-                >
-                  <div className="ao-dashboard-kpi-icon-wrap" aria-hidden="true">
-                    <FaCheckCircle className="ao-dashboard-kpi-icon" />
-                  </div>
-                  <div className="ao-dashboard-kpi-body">
-                    <p className="ao-dashboard-kpi-label">Completed</p>
-                    <p className="ao-dashboard-kpi-value">{data.completed.length}</p>
-                    <p className="ao-dashboard-kpi-hint">Submitted or done</p>
-                  </div>
-                </article>
+                </section>
               </div>
 
-              <div className="ao-dashboard-sections">
-                <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-pending-heading">
-                  <h2 id="ao-dashboard-pending-heading" className="ao-dashboard-section-title">
-                    <FaClock className="ao-dashboard-section-icon" aria-hidden="true" />
-                    Pending
-                  </h2>
-                  {data.pending.length === 0 ? (
-                    <p className="ao-dashboard-empty">No pending tasks.</p>
-                  ) : (
-                    <div className="ao-dashboard-task-list">
-                      {data.pending.map((ut) => (
-                        <TaskCard key={ut.id} userTask={ut} />
-                      ))}
-                    </div>
-                  )}
-                </section>
+              <div className="ao-tabs-wrap">
+                <nav className="ao-tabs" role="tablist" aria-label="Task type">
+                  <button
+                    type="button"
+                    role="tab"
+                    id="dashboard-tab-assigned"
+                    aria-selected={dashboardTab === "assigned"}
+                    aria-controls="dashboard-panel-assigned"
+                    className={`ao-tab ${dashboardTab === "assigned" ? "ao-tab-active" : ""}`}
+                    onClick={() => setDashboardTab("assigned")}
+                  >
+                    <FaUserCheck className="ao-tab-icon" aria-hidden="true" />
+                    <span>Assigned to me</span>
+                    <span className="ao-tab-count" aria-label={`${assignedCount} tasks`}>
+                      {assignedCount}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="dashboard-tab-personal"
+                    aria-selected={dashboardTab === "personal"}
+                    aria-controls="dashboard-panel-personal"
+                    className={`ao-tab ${dashboardTab === "personal" ? "ao-tab-active" : ""}`}
+                    onClick={() => setDashboardTab("personal")}
+                  >
+                    <FaUserEdit className="ao-tab-icon" aria-hidden="true" />
+                    <span>Personal tasks</span>
+                    <span className="ao-tab-count" aria-label={`${personalCount} tasks`}>
+                      {personalCount}
+                    </span>
+                  </button>
+                </nav>
 
-                <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-missing-heading">
-                  <h2 id="ao-dashboard-missing-heading" className="ao-dashboard-section-title ao-dashboard-section-missing">
-                    <FaExclamationTriangle className="ao-dashboard-section-icon" aria-hidden="true" />
-                    Missing (overdue)
-                  </h2>
-                  {data.missing.length === 0 ? (
-                    <p className="ao-dashboard-empty">No overdue tasks.</p>
-                  ) : (
-                    <div className="ao-dashboard-task-list">
-                      {data.missing.map((ut) => (
-                        <TaskCard key={ut.id} userTask={ut} isOverdue />
-                      ))}
-                    </div>
-                  )}
-                </section>
+                <div
+                  id="dashboard-panel-assigned"
+                  role="tabpanel"
+                  aria-labelledby="dashboard-tab-assigned"
+                  hidden={dashboardTab !== "assigned"}
+                  className="ao-tab-panel"
+                >
+                  <div className="ao-dashboard-sections">
+                    <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-pending-heading">
+                      <h2 id="ao-dashboard-pending-heading" className="ao-dashboard-section-title">
+                        <FaClock className="ao-dashboard-section-icon" aria-hidden="true" />
+                        Pending
+                      </h2>
+                      {splitByPersonal.assigned.pending.length === 0 ? (
+                        <p className="ao-dashboard-empty">No pending tasks.</p>
+                      ) : (
+                        <div className="ao-dashboard-task-list">
+                          {splitByPersonal.assigned.pending.map((ut) => (
+                            <TaskCard key={ut.id} userTask={ut} />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                    <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-missing-heading">
+                      <h2 id="ao-dashboard-missing-heading" className="ao-dashboard-section-title ao-dashboard-section-missing">
+                        <FaExclamationTriangle className="ao-dashboard-section-icon" aria-hidden="true" />
+                        Missing (overdue)
+                      </h2>
+                      {splitByPersonal.assigned.missing.length === 0 ? (
+                        <p className="ao-dashboard-empty">No overdue tasks.</p>
+                      ) : (
+                        <div className="ao-dashboard-task-list">
+                          {splitByPersonal.assigned.missing.map((ut) => (
+                            <TaskCard key={ut.id} userTask={ut} isOverdue />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                    <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-submitted-heading">
+                      <h2 id="ao-dashboard-submitted-heading" className="ao-dashboard-section-title">
+                        <FaCheckCircle className="ao-dashboard-section-icon" aria-hidden="true" />
+                        Submitted for validation
+                      </h2>
+                      {splitByPersonal.assigned.submitted.length === 0 ? (
+                        <p className="ao-dashboard-empty">No tasks are currently awaiting validation.</p>
+                      ) : (
+                        <div className="ao-dashboard-task-list">
+                          {splitByPersonal.assigned.submitted.map((ut) => (
+                            <TaskCard key={ut.id} userTask={ut} isSubmitted />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                    <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-completed-heading">
+                      <h2 id="ao-dashboard-completed-heading" className="ao-dashboard-section-title ao-dashboard-section-completed">
+                        <FaCheckCircle className="ao-dashboard-section-icon" aria-hidden="true" />
+                        Completed
+                      </h2>
+                      {splitByPersonal.assigned.completed.length === 0 ? (
+                        <p className="ao-dashboard-empty">No completed tasks yet.</p>
+                      ) : (
+                        <div className="ao-dashboard-task-list">
+                          {splitByPersonal.assigned.completed.map((ut) => (
+                            <TaskCard key={ut.id} userTask={ut} isCompleted />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  </div>
+                </div>
 
-                <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-submitted-heading">
-                  <h2 id="ao-dashboard-submitted-heading" className="ao-dashboard-section-title">
-                    <FaCheckCircle className="ao-dashboard-section-icon" aria-hidden="true" />
-                    Submitted for validation
-                  </h2>
-                  {data.submitted.length === 0 ? (
-                    <p className="ao-dashboard-empty">No tasks are currently awaiting validation.</p>
-                  ) : (
-                    <div className="ao-dashboard-task-list">
-                      {data.submitted.map((ut) => (
-                        <TaskCard key={ut.id} userTask={ut} isSubmitted />
-                      ))}
-                    </div>
-                  )}
-                </section>
-
-                <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-completed-heading">
-                  <h2 id="ao-dashboard-completed-heading" className="ao-dashboard-section-title ao-dashboard-section-completed">
-                    <FaCheckCircle className="ao-dashboard-section-icon" aria-hidden="true" />
-                    Completed
-                  </h2>
-                  {data.completed.length === 0 ? (
-                    <p className="ao-dashboard-empty">No completed tasks yet.</p>
-                  ) : (
-                    <div className="ao-dashboard-task-list">
-                      {data.completed.map((ut) => (
-                        <TaskCard key={ut.id} userTask={ut} isCompleted />
-                      ))}
-                    </div>
-                  )}
-                </section>
+                <div
+                  id="dashboard-panel-personal"
+                  role="tabpanel"
+                  aria-labelledby="dashboard-tab-personal"
+                  hidden={dashboardTab !== "personal"}
+                  className="ao-tab-panel"
+                >
+                  <div className="ao-dashboard-sections">
+                    <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-personal-pending-heading">
+                      <h2 id="ao-dashboard-personal-pending-heading" className="ao-dashboard-section-title">
+                        <FaClock className="ao-dashboard-section-icon" aria-hidden="true" />
+                        Pending
+                      </h2>
+                      {splitByPersonal.personal.pending.length === 0 ? (
+                        <p className="ao-dashboard-empty">No pending personal tasks.</p>
+                      ) : (
+                        <div className="ao-dashboard-task-list">
+                          {splitByPersonal.personal.pending.map((ut) => (
+                            <TaskCard key={ut.id} userTask={ut} />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                    <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-personal-missing-heading">
+                      <h2 id="ao-dashboard-personal-missing-heading" className="ao-dashboard-section-title ao-dashboard-section-missing">
+                        <FaExclamationTriangle className="ao-dashboard-section-icon" aria-hidden="true" />
+                        Missing (overdue)
+                      </h2>
+                      {splitByPersonal.personal.missing.length === 0 ? (
+                        <p className="ao-dashboard-empty">No overdue personal tasks.</p>
+                      ) : (
+                        <div className="ao-dashboard-task-list">
+                          {splitByPersonal.personal.missing.map((ut) => (
+                            <TaskCard key={ut.id} userTask={ut} isOverdue />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                    <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-personal-submitted-heading">
+                      <h2 id="ao-dashboard-personal-submitted-heading" className="ao-dashboard-section-title">
+                        <FaCheckCircle className="ao-dashboard-section-icon" aria-hidden="true" />
+                        Submitted for validation
+                      </h2>
+                      {splitByPersonal.personal.submitted.length === 0 ? (
+                        <p className="ao-dashboard-empty">No personal tasks awaiting validation.</p>
+                      ) : (
+                        <div className="ao-dashboard-task-list">
+                          {splitByPersonal.personal.submitted.map((ut) => (
+                            <TaskCard key={ut.id} userTask={ut} isSubmitted />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                    <section className="ao-dashboard-section" aria-labelledby="ao-dashboard-personal-completed-heading">
+                      <h2 id="ao-dashboard-personal-completed-heading" className="ao-dashboard-section-title ao-dashboard-section-completed">
+                        <FaCheckCircle className="ao-dashboard-section-icon" aria-hidden="true" />
+                        Completed
+                      </h2>
+                      {splitByPersonal.personal.completed.length === 0 ? (
+                        <p className="ao-dashboard-empty">No completed personal tasks yet.</p>
+                      ) : (
+                        <div className="ao-dashboard-task-list">
+                          {splitByPersonal.personal.completed.map((ut) => (
+                            <TaskCard key={ut.id} userTask={ut} isCompleted />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  </div>
+                </div>
               </div>
             </>
           )}

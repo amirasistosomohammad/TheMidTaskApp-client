@@ -15,6 +15,11 @@ const Layout = () => {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(null);
+  const [systemSettings, setSystemSettings] = useState({
+    app_name: "",
+    logo_url: null,
+  });
+  const [systemSettingsLoading, setSystemSettingsLoading] = useState(true);
 
   useEffect(() => {
     if (user?.role !== "central_admin") {
@@ -38,6 +43,55 @@ const Layout = () => {
       window.removeEventListener("account-approvals-updated", handler);
     };
   }, [user?.role]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSettings = async (withLoading) => {
+      if (withLoading) setSystemSettingsLoading(true);
+      try {
+        const res = await apiRequest("/settings", { method: "GET", auth: false });
+        if (cancelled) return;
+        setSystemSettings({
+          app_name: res?.app_name || "",
+          logo_url: res?.logo_url || null,
+        });
+      } catch {
+        if (cancelled) return;
+        setSystemSettings((prev) => ({
+          app_name: prev.app_name || "",
+          logo_url: prev.logo_url || null,
+        }));
+      } finally {
+        if (!cancelled && withLoading) setSystemSettingsLoading(false);
+      }
+    };
+
+    // Initial load: show skeleton in topbar/footer
+    loadSettings(true);
+
+    // When Central Admin saves settings/logo in this tab, refresh without skeleton
+    const handleSettingsUpdated = () => {
+      loadSettings(false);
+    };
+
+    // When the tab becomes visible (e.g., personnel focusing the app),
+    // refresh settings so branding stays in sync without a full reload.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        loadSettings(false);
+      }
+    };
+
+    window.addEventListener("midtask-settings-updated", handleSettingsUpdated);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("midtask-settings-updated", handleSettingsUpdated);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     const body = document.body;
@@ -64,7 +118,12 @@ const Layout = () => {
 
   return (
     <div className="sb-nav-fixed">
-      <Topbar onToggleSidebar={handleToggleSidebar} />
+      <Topbar
+        onToggleSidebar={handleToggleSidebar}
+        appName={systemSettings.app_name}
+        logoUrl={systemSettings.logo_url}
+        settingsLoading={systemSettingsLoading}
+      />
       <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
           <Sidebar
@@ -88,7 +147,7 @@ const Layout = () => {
               <Outlet key={location.pathname} />
             </div>
           </main>
-          <Footer />
+          <Footer appName={systemSettings.app_name} settingsLoading={systemSettingsLoading} />
         </div>
       </div>
     </div>

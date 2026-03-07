@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { apiRequest } from "../../services/apiClient";
@@ -13,6 +14,11 @@ import {
   FaCheckCircle,
   FaClock,
   FaSearch,
+  FaUserCheck,
+  FaUserEdit,
+  FaChevronDown,
+  FaChevronRight,
+  FaPlus,
 } from "react-icons/fa";
 import "./Timeline.css";
 
@@ -53,6 +59,7 @@ function frequencyLabel(freq) {
     quarterly: "Quarterly",
     every_two_months: "Every 2 months",
     once_or_twice_a_year: "Once or twice a year",
+    one_time: "One time",
   };
   return map[freq] || freq.replace(/_/g, " ");
 }
@@ -86,10 +93,14 @@ export default function Timeline() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [userTasks, setUserTasks] = useState([]);
+  const [timelineTab, setTimelineTab] = useState("assigned");
   const [searchQuery, setSearchQuery] = useState("");
   const [yearFilter, setYearFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
+  const [kpiModal, setKpiModal] = useState(null); // 'pending' | 'overdue' | 'submitted' | 'completed'
+  const [kpiModalClosing, setKpiModalClosing] = useState(false);
+  const [collapsedMonths, setCollapsedMonths] = useState({});
 
   const fetchTimeline = useCallback(async () => {
     if (user?.role !== "administrative_officer" || user?.status !== "active") {
@@ -117,12 +128,23 @@ export default function Timeline() {
   const isActive = user?.status === "active";
   const showTimeline = isActive && user?.role === "administrative_officer";
 
+  const splitByPersonal = useMemo(() => {
+    const isPersonal = (ut) => ut?.task?.is_personal === true;
+    const assigned = (userTasks || []).filter((ut) => !isPersonal(ut));
+    const personal = (userTasks || []).filter(isPersonal);
+    return { assigned, personal };
+  }, [userTasks]);
+
+  const tabTasks = timelineTab === "personal" ? splitByPersonal.personal : splitByPersonal.assigned;
+  const assignedCount = splitByPersonal.assigned.length;
+  const personalCount = splitByPersonal.personal.length;
+
   const stats = useMemo(() => {
     let pending = 0;
     let overdue = 0;
     let submitted = 0;
     let completed = 0;
-    for (const ut of userTasks) {
+    for (const ut of tabTasks) {
       if (ut.status === "completed") {
         completed++;
       } else if (ut.status === "submitted") {
@@ -134,20 +156,20 @@ export default function Timeline() {
       }
     }
     return { pending, overdue, submitted, completed };
-  }, [userTasks]);
+  }, [tabTasks]);
 
   const availableYears = useMemo(() => {
     const years = new Set();
-    for (const ut of userTasks) {
+    for (const ut of tabTasks) {
       if (ut.due_date && ut.due_date.length >= 4) {
         years.add(ut.due_date.slice(0, 4));
       }
     }
     return Array.from(years).sort();
-  }, [userTasks]);
+  }, [tabTasks]);
 
   const filteredTasks = useMemo(() => {
-    let list = userTasks;
+    let list = tabTasks;
 
     if (yearFilter !== "all") {
       list = list.filter((ut) => ut.due_date && ut.due_date.startsWith(yearFilter));
@@ -175,9 +197,21 @@ export default function Timeline() {
     }
 
     return list;
-  }, [userTasks, yearFilter, statusFilter, actionFilter, searchQuery]);
+  }, [tabTasks, yearFilter, statusFilter, actionFilter, searchQuery]);
 
   const grouped = groupByMonth(filteredTasks);
+
+  useEffect(() => {
+    if (!kpiModal) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setKpiModal(null);
+        setKpiModalClosing(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [kpiModal]);
 
   return (
     <div className="timeline-page page-transition-enter">
@@ -192,39 +226,98 @@ export default function Timeline() {
                   <FaCalendarAlt />
                 </span>
                 <div>
-                  <h1 className="timeline-title">Timeline</h1>
+                  <h1 className="timeline-title">Task schedule</h1>
                   <p className="timeline-subtitle">
-                    All your tasks by due date. Click a task to view details and take action.
+                    Track assigned and personal tasks by due date. Use the tabs to switch views.
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                className="timeline-refresh-btn"
-                onClick={() => fetchTimeline()}
-                disabled={loading}
-                aria-label="Refresh timeline"
-                title="Refresh"
-              >
-                {loading ? (
-                  <FaSpinner className="spinner" aria-hidden="true" />
-                ) : (
-                  <FaSync aria-hidden="true" />
-                )}
-                <span>Refresh</span>
-              </button>
+              <div className="timeline-header-actions">
+                <button
+                  type="button"
+                  className="timeline-refresh-btn"
+                  onClick={() => fetchTimeline()}
+                  disabled={loading}
+                  aria-label="Refresh timeline"
+                  title="Refresh"
+                >
+                  {loading ? (
+                    <FaSpinner className="spinner" aria-hidden="true" />
+                  ) : (
+                    <FaSync aria-hidden="true" />
+                  )}
+                  <span>Refresh</span>
+                </button>
+                <Link
+                  to="/dashboard/personal-tasks/create"
+                  className="timeline-header-create-btn"
+                  aria-label="Create personal task"
+                >
+                  <FaPlus aria-hidden="true" />
+                  <span>New personal task</span>
+                </Link>
+              </div>
             </div>
           </header>
 
+          <section className="timeline-tabs-card" aria-label="Schedule view selector">
+            <div className="timeline-tabs-card-header">
+              <div>
+                <h2 className="timeline-tabs-title">Schedule view</h2>
+                <p className="timeline-tabs-subtitle">
+                  Switch between assigned tasks (Central Admin) and your personal tasks. Filters apply to the selected view.
+                </p>
+              </div>
+            </div>
+
+            <div className="timeline-tabbar" role="tablist" aria-label="Schedule views">
+              <button
+                type="button"
+                role="tab"
+                id="timeline-tab-assigned"
+                aria-selected={timelineTab === "assigned"}
+                aria-controls="timeline-panel"
+                className={`timeline-tab-btn ${timelineTab === "assigned" ? "active" : ""}`}
+                onClick={() => setTimelineTab("assigned")}
+              >
+                <FaUserCheck className="timeline-tab-btn-icon" aria-hidden="true" />
+                <span className="timeline-tab-btn-label">Assigned tasks</span>
+                <span className="timeline-tab-badge" aria-label={`${assignedCount} tasks`}>
+                  {assignedCount}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                role="tab"
+                id="timeline-tab-personal"
+                aria-selected={timelineTab === "personal"}
+                aria-controls="timeline-panel"
+                className={`timeline-tab-btn ${timelineTab === "personal" ? "active" : ""}`}
+                onClick={() => setTimelineTab("personal")}
+              >
+                <FaUserEdit className="timeline-tab-btn-icon" aria-hidden="true" />
+                <span className="timeline-tab-btn-label">Personal tasks</span>
+                <span className="timeline-tab-badge" aria-label={`${personalCount} tasks`}>
+                  {personalCount}
+                </span>
+              </button>
+            </div>
+
+          </section>
+
+          <div
+            id="timeline-panel"
+            role="tabpanel"
+            aria-labelledby={timelineTab === "assigned" ? "timeline-tab-assigned" : "timeline-tab-personal"}
+          >
           {showTimeline && (
             <section className="timeline-kpi-grid" aria-label="Task summary">
               <article
                 className={`timeline-kpi-card timeline-kpi-pending ${
                   statusFilter === "pending" ? "timeline-kpi-active" : ""
                 }`}
-                onClick={() =>
-                  setStatusFilter((prev) => (prev === "pending" ? "all" : "pending"))
-                }
+                onClick={() => setKpiModal("pending")}
               >
                 <div className="timeline-kpi-icon-wrap" aria-hidden="true">
                   <FaClock className="timeline-kpi-icon" />
@@ -239,9 +332,7 @@ export default function Timeline() {
                 className={`timeline-kpi-card timeline-kpi-overdue ${
                   statusFilter === "overdue" ? "timeline-kpi-active" : ""
                 }`}
-                onClick={() =>
-                  setStatusFilter((prev) => (prev === "overdue" ? "all" : "overdue"))
-                }
+                onClick={() => setKpiModal("overdue")}
               >
                 <div className="timeline-kpi-icon-wrap" aria-hidden="true">
                   <FaExclamationTriangle className="timeline-kpi-icon" />
@@ -256,9 +347,7 @@ export default function Timeline() {
                 className={`timeline-kpi-card timeline-kpi-submitted ${
                   statusFilter === "submitted" ? "timeline-kpi-active" : ""
                 }`}
-                onClick={() =>
-                  setStatusFilter((prev) => (prev === "submitted" ? "all" : "submitted"))
-                }
+                onClick={() => setKpiModal("submitted")}
               >
                 <div className="timeline-kpi-icon-wrap" aria-hidden="true">
                   <FaCheckCircle className="timeline-kpi-icon" />
@@ -273,9 +362,7 @@ export default function Timeline() {
                 className={`timeline-kpi-card timeline-kpi-completed ${
                   statusFilter === "completed" ? "timeline-kpi-active" : ""
                 }`}
-                onClick={() =>
-                  setStatusFilter((prev) => (prev === "completed" ? "all" : "completed"))
-                }
+                onClick={() => setKpiModal("completed")}
               >
                 <div className="timeline-kpi-icon-wrap" aria-hidden="true">
                   <FaCheckCircle className="timeline-kpi-icon" />
@@ -293,10 +380,7 @@ export default function Timeline() {
             <section className="timeline-filters-card" aria-label="Filter tasks on timeline">
               <div className="timeline-filters-header">
                 <div>
-                  <h2 className="timeline-filters-title">Filter timeline</h2>
-                  <p className="timeline-filters-subtitle">
-                    Narrow down tasks by year, status, action, or name.
-                  </p>
+                  <h2 className="timeline-filters-title">Search & filters</h2>
                 </div>
                 <button
                   type="button"
@@ -387,34 +471,76 @@ export default function Timeline() {
               <FaSpinner className="spinner" aria-hidden="true" />
               <span>Loading timeline…</span>
             </div>
-          ) : userTasks.length === 0 ? (
+          ) : tabTasks.length === 0 ? (
             <div className="timeline-empty">
               <FaCalendarAlt className="timeline-empty-icon" aria-hidden="true" />
-              <p className="timeline-empty-title">No tasks assigned</p>
-              <p className="timeline-empty-desc">
-                You have no tasks on your timeline yet. Tasks will appear here once they are assigned to you by the Central Administrative Officer.
+              <p className="timeline-empty-title">
+                {timelineTab === "personal" ? "No personal tasks yet" : "No tasks assigned"}
               </p>
+              <p className="timeline-empty-desc">
+                {timelineTab === "personal"
+                  ? "Create a personal task to populate your personal timeline. Personal tasks remain separate from tasks assigned by the Central Administrative Officer."
+                  : "You have no tasks on your timeline yet. Tasks will appear here once they are assigned to you by the Central Administrative Officer."}
+              </p>
+              {timelineTab === "personal" && (
+                <Link to="/dashboard/personal-tasks/create" className="timeline-empty-create-btn">
+                  Create personal task
+                </Link>
+              )}
             </div>
           ) : (
             <div className="timeline-container">
               {grouped.map(({ monthKey, monthLabel, tasks }) => (
+                (() => {
+                  const isCollapsed = !!collapsedMonths[monthKey];
+                  const monthTotal = tasks.length;
+                  return (
                 <section
                   key={monthKey}
-                  className="timeline-month-group"
+                  className={`timeline-month-group ${isCollapsed ? "timeline-month-group-collapsed" : ""}`}
                   aria-labelledby={`timeline-month-${monthKey}`}
                 >
-                  <h2 id={`timeline-month-${monthKey}`} className="timeline-month-title">
-                    {monthLabel}
-                  </h2>
-                  <div className="timeline-track">
+                  <button
+                    type="button"
+                    className="timeline-month-header"
+                    onClick={() =>
+                      setCollapsedMonths((prev) => ({
+                        ...prev,
+                        [monthKey]: !prev[monthKey],
+                      }))
+                    }
+                    aria-expanded={!isCollapsed}
+                    aria-controls={`timeline-month-panel-${monthKey}`}
+                  >
+                    <span className="timeline-month-title-wrap">
+                      <span id={`timeline-month-${monthKey}`} className="timeline-month-title">
+                        {monthLabel}
+                      </span>
+                      <span className="timeline-month-count">
+                        {monthTotal} task{monthTotal !== 1 ? "s" : ""}
+                      </span>
+                    </span>
+                    <span className="timeline-month-chevron" aria-hidden="true">
+                      {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
+                    </span>
+                  </button>
+                  <div
+                    id={`timeline-month-panel-${monthKey}`}
+                    className={`timeline-month-body ${isCollapsed ? "collapsed" : ""}`}
+                  >
+                    <div className="timeline-track">
                     {tasks.map((ut, idx) => (
                       <TimelineItem key={ut.id} userTask={ut} isLast={idx === tasks.length - 1} />
                     ))}
+                    </div>
                   </div>
                 </section>
+                  );
+                })()
               ))}
             </div>
           )}
+          </div>
         </>
       )}
 
@@ -425,6 +551,105 @@ export default function Timeline() {
           </p>
         </div>
       )}
+
+      {kpiModal &&
+        createPortal(
+          <div
+            className="personnel-dir-overlay personnel-dir-kpi-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="timeline-kpi-modal-title"
+            aria-describedby="timeline-kpi-modal-desc"
+          >
+            <div
+              className={`personnel-dir-backdrop modal-backdrop-animation${kpiModalClosing ? " exit" : ""}`}
+              onClick={() => {
+                if (kpiModalClosing) return;
+                setKpiModalClosing(true);
+                setTimeout(() => {
+                  setKpiModalClosing(false);
+                  setKpiModal(null);
+                }, 200);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !kpiModalClosing) {
+                  setKpiModalClosing(true);
+                  setTimeout(() => {
+                    setKpiModalClosing(false);
+                    setKpiModal(null);
+                  }, 200);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Close"
+            />
+            <div className="personnel-dir-wrap personnel-dir-kpi-modal-wrap">
+              <div
+                className={`personnel-dir-modal personnel-dir-kpi-modal modal-content-animation${
+                  kpiModalClosing ? " exit" : ""
+                }`}
+              >
+                <header className="personnel-dir-modal-header">
+                  <div className="personnel-dir-modal-header-text">
+                    <h2 id="timeline-kpi-modal-title" className="personnel-dir-modal-title">
+                      {kpiModal === "pending" && "Pending tasks"}
+                      {kpiModal === "overdue" && "Overdue tasks"}
+                      {kpiModal === "submitted" && "Submitted tasks"}
+                      {kpiModal === "completed" && "Completed tasks"}
+                    </h2>
+                    <p id="timeline-kpi-modal-desc" className="personnel-dir-modal-subtitle">
+                      Full count for your current schedule view.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="personnel-dir-modal-close"
+                    onClick={() => {
+                      if (kpiModalClosing) return;
+                      setKpiModalClosing(true);
+                      setTimeout(() => {
+                        setKpiModalClosing(false);
+                        setKpiModal(null);
+                      }, 200);
+                    }}
+                    aria-label="Close"
+                  >
+                    ×
+                  </button>
+                </header>
+                <div className="personnel-dir-modal-body personnel-dir-kpi-modal-body">
+                  <div className="personnel-dir-kpi-modal-value">
+                    {kpiModal === "pending" && stats.pending}
+                    {kpiModal === "overdue" && stats.overdue}
+                    {kpiModal === "submitted" && stats.submitted}
+                    {kpiModal === "completed" && stats.completed}
+                  </div>
+                  <p className="personnel-dir-kpi-modal-label">
+                    {timelineTab === "assigned" ? "Assigned tasks in this status" : "Personal tasks in this status"}
+                  </p>
+                </div>
+                <footer className="personnel-dir-modal-footer">
+                  <button
+                    type="button"
+                    className="personnel-dir-btn-close"
+                    onClick={() => {
+                      if (kpiModalClosing) return;
+                      setKpiModalClosing(true);
+                      setTimeout(() => {
+                        setKpiModalClosing(false);
+                        setKpiModal(null);
+                      }, 200);
+                    }}
+                  >
+                    Close
+                  </button>
+                </footer>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
@@ -435,6 +660,7 @@ function TimelineItem({ userTask, isLast }) {
   const isCompleted = userTask?.status === "completed";
   const isSubmitted = userTask?.status === "submitted";
   const isOverdue = isOverdueTask(userTask);
+  const isPending = !isCompleted && !isSubmitted && !isOverdue;
 
   return (
     <Link
@@ -478,6 +704,12 @@ function TimelineItem({ userTask, isLast }) {
           <span className="timeline-item-badge timeline-item-badge-submitted">
             <FaCheckCircle aria-hidden="true" />
             Submitted for validation
+          </span>
+        )}
+        {isPending && (
+          <span className="timeline-item-badge timeline-item-badge-pending">
+            <FaClock aria-hidden="true" />
+            Pending
           </span>
         )}
       </div>

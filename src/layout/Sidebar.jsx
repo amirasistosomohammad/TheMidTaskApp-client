@@ -12,11 +12,12 @@ import {
   FaUpload,
   FaCheckCircle,
   FaHistory,
-  FaChartBar,
-  FaFileAlt,
   FaDesktop,
   FaClipboard,
+  FaCog,
   FaUserTie,
+  FaUser,
+  FaFileExcel,
 } from "react-icons/fa";
 import { useAuth } from "../hooks/useAuth";
 import { getHomePathForUser } from "../utils/authRouting";
@@ -98,24 +99,45 @@ const Sidebar = ({ onCloseSidebar, pendingApprovalsCount }) => {
             <span className="sb-sidebar-nav-link-label">Dashboard</span>
           </NavLink>
 
-          {/* Administrative Officer: Tasks */}
+          {/* Administrative Officer: structured workspace */}
           {isAdminOfficer && (
             <>
-              <div className="sb-sidenav-menu-heading">Tasks</div>
-              {navLink("/dashboard/my-tasks", <FaClipboardList className="sb-nav-link-icon" />, "My tasks")}
-              {navLink("/dashboard/timeline", <FaCalendarAlt className="sb-nav-link-icon" />, "Timeline")}
-              {navLink("/dashboard/submissions", <FaUpload className="sb-nav-link-icon" />, "My submissions")}
+              <div className="sb-sidenav-menu-heading">Schedule</div>
+              {navLink("/dashboard/timeline", <FaCalendarAlt className="sb-nav-link-icon" />, "Task schedule")}
+              {navLink("/dashboard/calendar", <FaCalendarAlt className="sb-nav-link-icon" />, "Calendar")}
+
+              <div className="sb-sidenav-menu-heading">Submissions & records</div>
+              {navLink("/dashboard/submissions", <FaUpload className="sb-nav-link-icon" />, "Submissions")}
+              {navLink("/dashboard/files-archive", <FaHistory className="sb-nav-link-icon" />, "Files archive")}
+              {navLink("/dashboard/reports", <FaFileExcel className="sb-nav-link-icon" />, "Reports")}
+
+              <div className="sb-sidenav-menu-heading">Personal tasks</div>
+              {navLink(
+                "/dashboard/personal-tasks/create",
+                <FaPlus className="sb-nav-link-icon" />,
+                "Create personal task"
+              )}
+
+              <div className="sb-sidenav-menu-heading">Account</div>
+              {navLink("/profile", <FaUser className="sb-nav-link-icon" />, "Profile")}
             </>
           )}
 
-          {/* School Head: Validation & evaluation */}
+          {/* School Head: categorized like Personnel – professional / corporate */}
           {isSchoolHead && (
             <>
-              <div className="sb-sidenav-menu-heading">Validation & evaluation</div>
+              <div className="sb-sidenav-menu-heading">Validations</div>
               {navLink("/school-head/validations", <FaCheckCircle className="sb-nav-link-icon" />, "Validations")}
+
+              <div className="sb-sidenav-menu-heading">Reports</div>
+              {navLink("/school-head/validation-report", <FaClipboardList className="sb-nav-link-icon" />, "Validation report")}
+              {navLink("/school-head/reports", <FaFileExcel className="sb-nav-link-icon" />, "Reports")}
+
+              <div className="sb-sidenav-menu-heading">History & records</div>
               {navLink("/school-head/task-history", <FaHistory className="sb-nav-link-icon" />, "Task history")}
-              {navLink("/school-head/evaluation", <FaChartBar className="sb-nav-link-icon" />, "Performance evaluation")}
-              {navLink("/school-head/reports", <FaFileAlt className="sb-nav-link-icon" />, "Reports")}
+
+              <div className="sb-sidenav-menu-heading">Account</div>
+              {navLink("/profile", <FaUser className="sb-nav-link-icon" />, "Profile")}
             </>
           )}
 
@@ -150,6 +172,7 @@ const Sidebar = ({ onCloseSidebar, pendingApprovalsCount }) => {
               <div className="sb-sidenav-menu-heading">System</div>
               {navLink("/central-admin/monitor", <FaDesktop className="sb-nav-link-icon" />, "Monitor officers")}
               {navLink("/central-admin/activity-logs", <FaClipboard className="sb-nav-link-icon" />, "Activity logs")}
+              {navLink("/central-admin/settings", <FaCog className="sb-nav-link-icon" />, "Settings")}
             </>
           )}
         </div>

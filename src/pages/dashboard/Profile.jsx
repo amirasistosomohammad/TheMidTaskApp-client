@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { apiRequest, apiRequestFormData } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
-import { FaUser, FaSpinner, FaLock, FaSave } from "react-icons/fa";
+import { FaUser, FaSpinner, FaLock, FaSave, FaEnvelope, FaIdCard, FaBuilding, FaMapMarkerAlt, FaImage, FaEye, FaEyeSlash } from "react-icons/fa";
 import "./Profile.css";
+import "./CentralAdminSettings.css";
 
 export default function Profile() {
   const { user, refreshUser } = useAuth();
+  const [activeTab, setActiveTab] = useState("account");
   const [profileLoading, setProfileLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -23,7 +25,15 @@ export default function Profile() {
   });
   const [profileErrors, setProfileErrors] = useState({});
   const [passwordErrors, setPasswordErrors] = useState({});
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasLetter: false,
+    hasNumber: false,
+  });
+  const [showPasswordCriteria, setShowPasswordCriteria] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
 
   useEffect(() => {
@@ -47,13 +57,31 @@ export default function Profile() {
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordForm((prev) => ({ ...prev, [name]: value }));
-    if (passwordErrors[name]) setPasswordErrors((prev) => ({ ...prev, [name]: null }));
+
+    if (name === "new_password") {
+      if (value.length > 0) setShowPasswordCriteria(true);
+      const validation = {
+        minLength: value.length >= 8,
+        hasLetter: /[A-Za-z]/.test(value),
+        hasNumber: /[0-9]/.test(value),
+      };
+      setPasswordValidation(validation);
+    }
+
+    if (passwordErrors[name]) {
+      setPasswordErrors((prev) => ({ ...prev, [name]: null }));
+    }
   };
 
   const validatePassword = (pwd) => {
-    if (!pwd || pwd.length < 8) return false;
-    if (!/[A-Za-z]/.test(pwd) || !/[0-9]/.test(pwd)) return false;
-    return true;
+    if (!pwd) return false;
+    const validation = {
+      minLength: pwd.length >= 8,
+      hasLetter: /[A-Za-z]/.test(pwd),
+      hasNumber: /[0-9]/.test(pwd),
+    };
+    setPasswordValidation(validation);
+    return validation.minLength && validation.hasLetter && validation.hasNumber;
   };
 
   const handleAvatarChange = async (e) => {
@@ -146,12 +174,22 @@ export default function Profile() {
         new_password_confirmation: "",
       });
       setPasswordErrors({});
+      setPasswordValidation({
+        minLength: false,
+        hasLetter: false,
+        hasNumber: false,
+      });
+      setShowPasswordCriteria(false);
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
       showToast.success("Password changed successfully.");
     } catch (err) {
-      const msg = err?.data?.errors?.current_password?.[0]
-        || err?.data?.errors
-        ? Object.values(err.data.errors).flat().join(" ")
-        : err?.message || "Failed to change password.";
+      const msg =
+        err?.data?.errors?.current_password?.[0] ||
+        (err?.data?.errors ? Object.values(err.data.errors).flat().join(" ") : null) ||
+        err?.message ||
+        "Failed to change password.";
       showToast.error(msg);
     } finally {
       setPasswordLoading(false);
@@ -161,267 +199,405 @@ export default function Profile() {
   if (!user) return null;
 
   return (
-    <div className="profile-page page-transition-enter">
-      <header className="profile-header">
-        <div className="profile-header-inner">
-          <span className="profile-header-icon" aria-hidden="true">
-            <FaUser />
-          </span>
-          <div>
-            <h1 className="profile-header-title">Profile</h1>
-            <p className="profile-header-subtitle">
-              View and edit your account information. Change your password.
-            </p>
-          </div>
+    <div className="system-settings-container page-enter profile-settings-container">
+      <div className="system-settings-header">
+        <div className="profile-settings-avatar-wrap" aria-hidden="true">
+          {user.avatar_url ? (
+            <img src={user.avatar_url} alt="" />
+          ) : (
+            <span className="profile-settings-avatar-placeholder"><FaUser /></span>
+          )}
         </div>
-      </header>
-
-      <div className="profile-card">
-        <div className="profile-card-header">
-          <h2 className="profile-card-title">Account information</h2>
-        </div>
-        <div className="profile-avatar-section">
-          <div className="profile-avatar-wrap">
-            <div className="profile-avatar-preview">
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt="" />
-              ) : (
-                <span className="profile-avatar-placeholder"><FaUser aria-hidden="true" /></span>
-              )}
-            </div>
-            <div className="profile-avatar-actions">
-              <input
-                id="profile-avatar"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                onChange={handleAvatarChange}
-                disabled={avatarLoading}
-                className="profile-avatar-input"
-              />
-              <label htmlFor="profile-avatar" className="profile-avatar-btn">
-                {avatarLoading ? "Uploading…" : "Change photo"}
-              </label>
-            </div>
-          </div>
-        </div>
-        <form onSubmit={handleProfileSubmit} className="profile-form">
-          <div className="profile-form-group">
-            <label htmlFor="profile-name" className="profile-label">
-              Full name <span className="profile-required">*</span>
-            </label>
-            <input
-              id="profile-name"
-              name="name"
-              type="text"
-              value={profileForm.name}
-              onChange={handleProfileChange}
-              className={`profile-input ${profileErrors.name ? "profile-input-error" : ""}`}
-              disabled={profileLoading}
-              maxLength={255}
-            />
-            {profileErrors.name && <p className="profile-error">{profileErrors.name}</p>}
-          </div>
-
-          <div className="profile-form-group">
-            <label htmlFor="profile-email" className="profile-label">
-              Email
-            </label>
-            <input
-              id="profile-email"
-              type="email"
-              value={user.email || ""}
-              readOnly
-              className="profile-input profile-input-readonly"
-              aria-describedby="profile-email-hint"
-            />
-            <p id="profile-email-hint" className="profile-hint">Email cannot be changed.</p>
-          </div>
-
-          <div className="profile-form-group">
-            <label htmlFor="profile-employee-id" className="profile-label">
-              Employee ID
-            </label>
-            <input
-              id="profile-employee-id"
-              name="employee_id"
-              type="text"
-              value={profileForm.employee_id}
-              onChange={handleProfileChange}
-              className="profile-input"
-              disabled={profileLoading}
-              maxLength={100}
-            />
-          </div>
-
-          <div className="profile-form-group">
-            <label htmlFor="profile-position" className="profile-label">
-              Position
-            </label>
-            <input
-              id="profile-position"
-              name="position"
-              type="text"
-              value={profileForm.position}
-              onChange={handleProfileChange}
-              className="profile-input"
-              disabled={profileLoading}
-              maxLength={255}
-            />
-          </div>
-
-          <div className="profile-form-group">
-            <label htmlFor="profile-division" className="profile-label">
-              Division
-            </label>
-            <input
-              id="profile-division"
-              name="division"
-              type="text"
-              value={profileForm.division}
-              onChange={handleProfileChange}
-              className="profile-input"
-              disabled={profileLoading}
-              maxLength={255}
-            />
-          </div>
-
-          <div className="profile-form-group">
-            <label htmlFor="profile-school-name" className="profile-label">
-              School name
-            </label>
-            <input
-              id="profile-school-name"
-              name="school_name"
-              type="text"
-              value={profileForm.school_name}
-              onChange={handleProfileChange}
-              className="profile-input"
-              disabled={profileLoading}
-              maxLength={255}
-            />
-          </div>
-
-          <div className="profile-form-footer">
-            <button
-              type="submit"
-              className="profile-btn-submit"
-              disabled={profileLoading}
-              aria-busy={profileLoading}
-            >
-              {profileLoading ? (
-                <>
-                  <FaSpinner className="spinner" aria-hidden="true" />
-                  <span>Saving…</span>
-                </>
-              ) : (
-                <>
-                  <FaSave aria-hidden="true" />
-                  <span>Save changes</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+        <h1 className="system-settings-header-title">Profile</h1>
+        <p className="system-settings-header-subtitle">
+          {user?.name || "User"} • {user?.email || "—"}
+        </p>
+        <p className="system-settings-header-desc">
+          Review and maintain your official account information and access credentials.
+        </p>
       </div>
 
-      <div className="profile-card">
-        <div className="profile-card-header">
-          <h2 className="profile-card-title">
-            <FaLock className="profile-card-title-icon" aria-hidden="true" />
-            Change password
-          </h2>
-        </div>
-        <form onSubmit={handlePasswordSubmit} className="profile-form">
-          <div className="profile-form-group">
-            <label htmlFor="profile-current-password" className="profile-label">
-              Current password <span className="profile-required">*</span>
-            </label>
-            <input
-              id="profile-current-password"
-              name="current_password"
-              type="password"
-              value={passwordForm.current_password}
-              onChange={handlePasswordChange}
-              autoComplete="current-password"
-              className={`profile-input ${passwordErrors.current_password ? "profile-input-error" : ""}`}
-              disabled={passwordLoading}
-              placeholder="Enter your current password"
-            />
-            {passwordErrors.current_password && (
-              <p className="profile-error">{passwordErrors.current_password}</p>
-            )}
-          </div>
-
-          <div className="profile-form-group">
-            <label htmlFor="profile-new-password" className="profile-label">
-              New password <span className="profile-required">*</span>
-            </label>
-            <input
-              id="profile-new-password"
-              name="new_password"
-              type={showNewPassword ? "text" : "password"}
-              value={passwordForm.new_password}
-              onChange={handlePasswordChange}
-              autoComplete="new-password"
-              className={`profile-input ${passwordErrors.new_password ? "profile-input-error" : ""}`}
-              disabled={passwordLoading}
-              placeholder="Min 8 chars, letter + number"
-            />
-            <label className="profile-checkbox-label">
-              <input
-                type="checkbox"
-                checked={showNewPassword}
-                onChange={(e) => setShowNewPassword(e.target.checked)}
-                className="profile-checkbox"
-              />
-              <span>Show password</span>
-            </label>
-            {passwordErrors.new_password && (
-              <p className="profile-error">{passwordErrors.new_password}</p>
-            )}
-          </div>
-
-          <div className="profile-form-group">
-            <label htmlFor="profile-confirm-password" className="profile-label">
-              Confirm new password <span className="profile-required">*</span>
-            </label>
-            <input
-              id="profile-confirm-password"
-              name="new_password_confirmation"
-              type="password"
-              value={passwordForm.new_password_confirmation}
-              onChange={handlePasswordChange}
-              autoComplete="new-password"
-              className={`profile-input ${passwordErrors.new_password_confirmation ? "profile-input-error" : ""}`}
-              disabled={passwordLoading}
-              placeholder="Confirm new password"
-            />
-            {passwordErrors.new_password_confirmation && (
-              <p className="profile-error">{passwordErrors.new_password_confirmation}</p>
-            )}
-          </div>
-
-          <div className="profile-form-footer">
+      <div className="system-settings-row">
+        <div className="system-settings-card system-settings-card-left">
+          <h2 className="system-settings-menu-title">Profile Menu</h2>
+          <nav className="system-settings-nav">
             <button
-              type="submit"
-              className="profile-btn-submit"
-              disabled={passwordLoading}
-              aria-busy={passwordLoading}
+              type="button"
+              className={`system-settings-nav-btn ${activeTab === "account" ? "active" : ""}`}
+              onClick={() => setActiveTab("account")}
             >
-              {passwordLoading ? (
-                <>
-                  <FaSpinner className="spinner" aria-hidden="true" />
-                  <span>Changing…</span>
-                </>
-              ) : (
-                <>
-                  <FaLock aria-hidden="true" />
-                  <span>Change password</span>
-                </>
-              )}
+              <FaUser className="system-settings-nav-icon" aria-hidden="true" />
+              <div className="system-settings-nav-text">
+                <span className="system-settings-nav-label">Account information</span>
+                <span className="system-settings-nav-desc">Update your profile details</span>
+              </div>
             </button>
+            <button
+              type="button"
+              className={`system-settings-nav-btn ${activeTab === "security" ? "active" : ""}`}
+              onClick={() => setActiveTab("security")}
+            >
+              <FaLock className="system-settings-nav-icon" aria-hidden="true" />
+              <div className="system-settings-nav-text">
+                <span className="system-settings-nav-label">Security</span>
+                <span className="system-settings-nav-desc">Change your password</span>
+              </div>
+            </button>
+          </nav>
+        </div>
+
+        <div className="system-settings-card system-settings-card-right">
+          <div className="system-settings-content-body">
+            {activeTab === "account" && (
+              <div className="system-settings-tab-panel tab-transition-enter">
+                <h2 className="system-settings-card-title">
+                  <FaUser className="system-settings-card-title-icon" aria-hidden="true" />
+                  <span>Account information</span>
+                </h2>
+
+                <div className="system-settings-admin-note">
+                  <strong>Note:</strong> Your email address is used for authentication and cannot be changed.
+                </div>
+
+                <div className="system-settings-branding-preview-wrap profile-settings-photo-wrap">
+                  <label className="system-settings-label">Profile photo</label>
+                  <div className="system-settings-logo-row">
+                    <div className="system-settings-logo-preview profile-settings-photo-preview">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} alt="Profile photo" />
+                      ) : (
+                        <span className="system-settings-logo-placeholder">
+                          <FaImage aria-hidden="true" />
+                        </span>
+                      )}
+                    </div>
+                    <div className="system-settings-logo-actions">
+                      <input
+                        id="profile-avatar"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        onChange={handleAvatarChange}
+                        disabled={avatarLoading}
+                        className="system-settings-logo-input"
+                      />
+                      <label htmlFor="profile-avatar" className="system-settings-logo-btn">
+                        {avatarLoading ? (
+                          <>
+                            <FaSpinner className="spinner" aria-hidden="true" />
+                            <span>Uploading…</span>
+                          </>
+                        ) : (
+                          "Upload photo"
+                        )}
+                      </label>
+                      <span className="system-settings-logo-hint">PNG, JPG, WEBP up to 2MB.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <form onSubmit={handleProfileSubmit} className="system-settings-form">
+                  <div className="profile-settings-grid">
+                    <div className="system-settings-form-group">
+                      <label htmlFor="profile-name" className="system-settings-label">
+                        Full name <span className="system-settings-required">*</span>
+                      </label>
+                      <input
+                        id="profile-name"
+                        name="name"
+                        type="text"
+                        value={profileForm.name}
+                        onChange={handleProfileChange}
+                        className={`system-settings-input ${profileErrors.name ? "error" : ""}`}
+                        disabled={profileLoading}
+                        maxLength={255}
+                        placeholder="Enter your full name"
+                      />
+                      {profileErrors.name && <p className="system-settings-error">{profileErrors.name}</p>}
+                    </div>
+
+                    <div className="system-settings-form-group profile-settings-form-group-readonly">
+                      <label htmlFor="profile-email" className="system-settings-label">
+                        Email <span className="profile-settings-readonly-hint">(cannot be changed)</span>
+                      </label>
+                      <input
+                        id="profile-email"
+                        type="email"
+                        value={user.email || ""}
+                        readOnly
+                        aria-readonly="true"
+                        className="system-settings-input profile-settings-input-readonly"
+                      />
+                    </div>
+
+                    <div className="system-settings-form-group">
+                      <label htmlFor="profile-employee-id" className="system-settings-label">Employee ID</label>
+                      <input
+                        id="profile-employee-id"
+                        name="employee_id"
+                        type="text"
+                        value={profileForm.employee_id}
+                        onChange={handleProfileChange}
+                        className="system-settings-input"
+                        disabled={profileLoading}
+                        maxLength={100}
+                        placeholder="e.g. 2026-00123"
+                      />
+                    </div>
+
+                    <div className="system-settings-form-group">
+                      <label htmlFor="profile-position" className="system-settings-label">Position</label>
+                      <input
+                        id="profile-position"
+                        name="position"
+                        type="text"
+                        value={profileForm.position}
+                        onChange={handleProfileChange}
+                        className="system-settings-input"
+                        disabled={profileLoading}
+                        maxLength={255}
+                        placeholder="e.g. Administrative Officer"
+                      />
+                    </div>
+
+                    <div className="system-settings-form-group">
+                      <label htmlFor="profile-division" className="system-settings-label">Division</label>
+                      <input
+                        id="profile-division"
+                        name="division"
+                        type="text"
+                        value={profileForm.division}
+                        onChange={handleProfileChange}
+                        className="system-settings-input"
+                        disabled={profileLoading}
+                        maxLength={255}
+                        placeholder="e.g. Division Office"
+                      />
+                    </div>
+
+                    <div className="system-settings-form-group">
+                      <label htmlFor="profile-school-name" className="system-settings-label">School name</label>
+                      <input
+                        id="profile-school-name"
+                        name="school_name"
+                        type="text"
+                        value={profileForm.school_name}
+                        onChange={handleProfileChange}
+                        className="system-settings-input"
+                        disabled={profileLoading}
+                        maxLength={255}
+                        placeholder="e.g. Sample National High School"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="system-settings-form-footer">
+                    <button
+                      type="submit"
+                      className="system-settings-btn-primary"
+                      disabled={profileLoading}
+                      aria-busy={profileLoading}
+                    >
+                      {profileLoading ? (
+                        <>
+                          <FaSpinner className="spinner" aria-hidden="true" />
+                          <span>Saving…</span>
+                        </>
+                      ) : (
+                        <>
+                          <FaSave aria-hidden="true" />
+                          <span>Save changes</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {activeTab === "security" && (
+              <div className="system-settings-tab-panel tab-transition-enter">
+                <h2 className="system-settings-card-title">
+                  <FaLock className="system-settings-card-title-icon" aria-hidden="true" />
+                  <span>Security</span>
+                </h2>
+
+                <div className="system-settings-admin-note">
+                  <strong>Security note:</strong> Use a strong password and do not share your credentials.
+                </div>
+
+                <form onSubmit={handlePasswordSubmit} className="system-settings-form">
+                  <div className="system-settings-form-group">
+                    <label htmlFor="profile-current-password" className="system-settings-label">
+                      Current password <span className="system-settings-required">*</span>
+                    </label>
+                    <div className="profile-settings-password-input-wrap">
+                      <input
+                        id="profile-current-password"
+                        name="current_password"
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={passwordForm.current_password}
+                        onChange={handlePasswordChange}
+                        autoComplete="current-password"
+                        className={`system-settings-input profile-settings-password-input ${passwordErrors.current_password ? "error" : ""}`}
+                        disabled={passwordLoading}
+                        placeholder="Enter your current password"
+                      />
+                      <button
+                        type="button"
+                        className="profile-settings-password-toggle"
+                        onClick={() => !passwordLoading && setShowCurrentPassword(!showCurrentPassword)}
+                        disabled={passwordLoading}
+                        aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                      >
+                        {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                    <div
+                      className={`profile-settings-error-wrapper ${
+                        passwordErrors.current_password ? "profile-settings-error-visible" : ""
+                      }`}
+                    >
+                      <div className="profile-settings-error-inner">
+                        {passwordErrors.current_password && (
+                          <p className="system-settings-error">{passwordErrors.current_password}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="system-settings-form-group">
+                    <label htmlFor="profile-new-password" className="system-settings-label">
+                      New password <span className="system-settings-required">*</span>
+                    </label>
+                    <div className="profile-settings-password-input-wrap">
+                      <input
+                        id="profile-new-password"
+                        name="new_password"
+                        type={showNewPassword ? "text" : "password"}
+                        value={passwordForm.new_password}
+                        onChange={handlePasswordChange}
+                        autoComplete="new-password"
+                        className={`system-settings-input profile-settings-password-input ${
+                          passwordForm.new_password &&
+                          passwordValidation.minLength &&
+                          passwordValidation.hasLetter &&
+                          passwordValidation.hasNumber
+                            ? "profile-settings-input-valid"
+                            : passwordForm.new_password && passwordErrors.new_password
+                            ? "error"
+                            : ""
+                        }`}
+                        disabled={passwordLoading}
+                        placeholder="Create a new password"
+                        minLength={8}
+                      />
+                      <button
+                        type="button"
+                        className="profile-settings-password-toggle"
+                        onClick={() => !passwordLoading && setShowNewPassword(!showNewPassword)}
+                        disabled={passwordLoading}
+                        aria-label={showNewPassword ? "Hide password" : "Show password"}
+                      >
+                        {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                    <div
+                      className={`profile-settings-password-criteria-wrapper ${
+                        showPasswordCriteria ? "profile-settings-password-criteria-visible" : ""
+                      }`}
+                    >
+                      <div className="profile-settings-password-criteria-inner">
+                        <ul className="profile-settings-password-criteria-content">
+                          <li className={passwordValidation.minLength ? "profile-settings-criteria-valid" : ""}>
+                            • At least 8 characters
+                          </li>
+                          <li className={passwordValidation.hasLetter ? "profile-settings-criteria-valid" : ""}>
+                            • Contains a letter
+                          </li>
+                          <li className={passwordValidation.hasNumber ? "profile-settings-criteria-valid" : ""}>
+                            • Contains a number
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div
+                      className={`profile-settings-error-wrapper ${
+                        passwordErrors.new_password ? "profile-settings-error-visible" : ""
+                      }`}
+                    >
+                      <div className="profile-settings-error-inner">
+                        {passwordErrors.new_password && (
+                          <p className="system-settings-error">{passwordErrors.new_password}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="system-settings-form-group">
+                    <label htmlFor="profile-confirm-password" className="system-settings-label">
+                      Confirm new password <span className="system-settings-required">*</span>
+                    </label>
+                    <div className="profile-settings-password-input-wrap">
+                      <input
+                        id="profile-confirm-password"
+                        name="new_password_confirmation"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={passwordForm.new_password_confirmation}
+                        onChange={handlePasswordChange}
+                        autoComplete="new-password"
+                        className={`system-settings-input profile-settings-password-input ${passwordErrors.new_password_confirmation ? "error" : ""}`}
+                        disabled={passwordLoading}
+                        placeholder="Confirm new password"
+                        minLength={8}
+                      />
+                      <button
+                        type="button"
+                        className="profile-settings-password-toggle"
+                        onClick={() => !passwordLoading && setShowConfirmPassword(!showConfirmPassword)}
+                        disabled={passwordLoading}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                    <div
+                      className={`profile-settings-error-wrapper ${
+                        passwordErrors.new_password_confirmation ? "profile-settings-error-visible" : ""
+                      }`}
+                    >
+                      <div className="profile-settings-error-inner">
+                        {passwordErrors.new_password_confirmation && (
+                          <p className="system-settings-error">{passwordErrors.new_password_confirmation}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="system-settings-form-footer">
+                    <button
+                      type="submit"
+                      className="system-settings-btn-primary"
+                      disabled={passwordLoading}
+                      aria-busy={passwordLoading}
+                    >
+                      {passwordLoading ? (
+                        <>
+                          <FaSpinner className="spinner" aria-hidden="true" />
+                          <span>Changing…</span>
+                        </>
+                      ) : (
+                        <>
+                          <FaLock aria-hidden="true" />
+                          <span>Change password</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

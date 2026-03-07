@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { apiRequest, apiRequestFormData } from "../../services/apiClient";
+import { createPortal } from "react-dom";
+import { useParams, useNavigate, useBlocker } from "react-router-dom";
+import { apiRequest, apiRequestFormData, getAuthToken } from "../../services/apiClient";
 import {
   FaArrowLeft,
   FaClipboardList,
@@ -12,6 +13,7 @@ import {
   FaCheckCircle,
   FaFilePdf,
   FaExternalLinkAlt,
+  FaDownload,
 } from "react-icons/fa";
 import { showToast } from "../../services/notificationService";
 import "./TaskDetail.css";
@@ -173,7 +175,21 @@ export default function TaskDetail() {
   }, [id, userTask, isUpload, isInput]);
 
   const inputSubmission = submissions?.find((s) => s.type === "input") || null;
+  const uploadSubmission = submissions?.find((s) => s.type === "upload") || null;
   const savedInputData = inputSubmission?.input_data || null;
+
+  const [uploadNotes, setUploadNotes] = useState("");
+  const [uploadNotesError, setUploadNotesError] = useState("");
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [downloadingId, setDownloadingId] = useState(null);
+
+  useEffect(() => {
+    if (uploadSubmission?.notes !== undefined && uploadSubmission?.notes !== null) {
+      setUploadNotes(uploadSubmission.notes);
+    } else if (isUpload && submissions.length === 0 && !submissionsLoading) {
+      setUploadNotes("");
+    }
+  }, [uploadSubmission?.notes, isUpload, submissions.length, submissionsLoading]);
 
   const [inputForm, setInputForm] = useState({
     period: "",
@@ -196,7 +212,8 @@ export default function TaskDetail() {
     }
   }, [savedInputData, isInput, submissions.length, submissionsLoading]);
 
-  const isCompleted = ["completed", "submitted"].includes(userTask?.status);
+  const isCompleted = userTask?.status === "completed";
+  const isSubmitted = userTask?.status === "submitted";
 
   const stripCommas = (v) => String(v || "").replace(/,/g, "");
 
@@ -258,6 +275,47 @@ export default function TaskDetail() {
   const handleOptionalMovClick = () => {
     if (uploading) return;
     if (optionalMovInputRef.current) optionalMovInputRef.current.click();
+  };
+
+  const handleDownloadFile = async (file) => {
+    if (!file?.id) return;
+    const base = API_BASE || "/api";
+    const endpoint = `${base}/submission-files/${file.id}/download`;
+    setDownloadingId(file.id);
+    try {
+      const token = getAuthToken();
+      const res = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Accept: "*/*",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        let message = "Failed to download file.";
+        try {
+          const data = await res.json();
+          if (data?.message) message = data.message;
+        } catch {
+          // ignore
+        }
+        throw new Error(message);
+      }
+      const blob = await res.blob();
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = file.original_name || "download";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(href);
+      showToast.success("File downloaded successfully.");
+    } catch (err) {
+      showToast.error(err?.message || "Failed to download file.");
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const handleOptionalMovChange = async (e) => {
@@ -379,6 +437,28 @@ export default function TaskDetail() {
 
     setSubmitting(true);
     try {
+      if (isUpload) {
+        const notesToSave = (uploadNotes || "").trim();
+        if (notesToSave.length > 2000) {
+          setUploadNotesError("Notes must be 2,000 characters or less.");
+          setSubmitting(false);
+          return;
+        }
+        const savedNotes = (uploadSubmission?.notes ?? "").trim();
+        if (notesToSave !== savedNotes) {
+          const saveRes = await apiRequest(`/user-tasks/${id}/submission/notes`, {
+            method: "PUT",
+            auth: true,
+            body: { notes: notesToSave || null },
+          });
+          if (saveRes?.submission) {
+            setSubmissions((prev) => {
+              const rest = prev.filter((s) => s.type !== "upload");
+              return [...rest, saveRes.submission];
+            });
+          }
+        }
+      }
       if (isInput) {
         const period = (inputForm.period || "").trim();
         const reference_no = (inputForm.reference_no || "").trim();
@@ -400,14 +480,20 @@ export default function TaskDetail() {
           setInputForm((f) => ({ ...f, amount: formatAmountDisplay(amountNormalized) }));
         }
       }
-      const res = await apiRequest(`/user-tasks/${id}/submit`, {
-        method: "POST",
-        auth: true,
-      });
-      if (res?.user_task) {
-        setUserTask(res.user_task);
+      if (!isCompleted) {
+        const res = await apiRequest(`/user-tasks/${id}/submit`, {
+          method: "POST",
+          auth: true,
+        });
+        if (res?.user_task) {
+          setUserTask(res.user_task);
+        }
       }
-      showToast.success("Task submitted for validation.");
+      showToast.success(
+        isSubmitted || isCompleted
+          ? "Changes saved successfully."
+          : "Task submitted for validation."
+      );
     } catch (err) {
       const errors = err?.data?.errors || {};
       const msg = err?.data?.message || err?.message || "Failed to submit task for validation.";
@@ -422,6 +508,75 @@ export default function TaskDetail() {
     }
   };
 
+  const hasUnsavedUploadNotes =
+    isUpload &&
+    String(uploadNotes || "").trim() !== String(uploadSubmission?.notes ?? "").trim();
+
+  // Determine if the input form differs from the last saved data.
+  const isInputFormDirty = (() => {
+    if (!isInput) return false;
+    const period = (inputForm.period || "").trim();
+    const referenceNo = (inputForm.reference_no || "").trim();
+    const notes = (inputForm.notes || "").trim();
+    const amountNormalized = normalizeAmountToTwoDecimals(inputForm.amount);
+
+    if (!savedInputData) {
+      // No saved data yet — treat any non-empty field as unsaved progress.
+      return Boolean(period || referenceNo || notes || amountNormalized);
+    }
+
+    const savedPeriod = (savedInputData.period || "").trim();
+    const savedRef = (savedInputData.reference_no || "").trim();
+    const savedNotes = (savedInputData.notes || "").trim();
+    const savedAmount =
+      savedInputData.amount != null
+        ? normalizeAmountToTwoDecimals(String(savedInputData.amount))
+        : "";
+
+    return (
+      period !== savedPeriod ||
+      referenceNo !== savedRef ||
+      notes !== savedNotes ||
+      (amountNormalized || "") !== (savedAmount || "")
+    );
+  })();
+
+  const hasUnsavedProgress =
+    (isUpload && hasUnsavedUploadNotes) ||
+    (isInput && isInputFormDirty);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedProgress && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  useEffect(() => {
+    if (!hasUnsavedProgress) return;
+    const onBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [hasUnsavedProgress]);
+
+  const handleBack = () => {
+    // Always trigger navigation and let the router blocker decide
+    // whether to show the "Progress will be lost" modal.
+    navigate(-1);
+  };
+
+  const handleConfirmLeave = () => {
+    setShowLeaveConfirm(false);
+    if (blocker.state === "blocked") blocker.proceed();
+    else navigate(-1);
+  };
+
+  const handleStayLeaveModal = () => {
+    setShowLeaveConfirm(false);
+    if (blocker.state === "blocked") blocker.reset();
+  };
+
   if (loading) {
     return (
       <div className="task-detail-page page-transition-enter">
@@ -432,12 +587,6 @@ export default function TaskDetail() {
       </div>
     );
   }
-
-  const handleBack = () => {
-    // Go back to the previous page (Dashboard, Timeline, or My tasks),
-    // which is more natural than always forcing /dashboard.
-    navigate(-1);
-  };
 
   if (error || !userTask) {
     return (
@@ -457,6 +606,7 @@ export default function TaskDetail() {
   const status = statusLabel(userTask.status, userTask.due_date);
 
   return (
+    <>
     <div className="task-detail-page page-transition-enter">
       <header className="task-detail-header">
         <div className="task-detail-header-inner">
@@ -576,7 +726,7 @@ export default function TaskDetail() {
                           setInputForm((f) => ({ ...f, period: e.target.value }));
                           if (inputFormErrors.period) setInputFormErrors((prev) => { const next = { ...prev }; delete next.period; return next; });
                         }}
-                        disabled={isCompleted}
+                        disabled={false}
                         aria-invalid={Boolean(inputFormErrors.period)}
                         aria-describedby={inputFormErrors.period ? "task-input-period-err" : undefined}
                       />
@@ -600,7 +750,7 @@ export default function TaskDetail() {
                           setInputForm((f) => ({ ...f, reference_no: e.target.value }));
                           if (inputFormErrors.reference_no) setInputFormErrors((prev) => { const next = { ...prev }; delete next.reference_no; return next; });
                         }}
-                        disabled={isCompleted}
+                        disabled={false}
                         aria-invalid={Boolean(inputFormErrors.reference_no)}
                         aria-describedby={inputFormErrors.reference_no ? "task-input-reference-err" : undefined}
                       />
@@ -642,7 +792,7 @@ export default function TaskDetail() {
                           setInputForm((f) => ({ ...f, amount: formatAmountDisplay(normalized) }));
                         }
                       }}
-                      disabled={isCompleted}
+                      disabled={false}
                       aria-invalid={Boolean(inputFormErrors.amount)}
                       aria-describedby={inputFormErrors.amount ? "task-input-amount-err" : undefined}
                     />
@@ -666,7 +816,7 @@ export default function TaskDetail() {
                         setInputForm((f) => ({ ...f, notes: e.target.value }));
                         if (inputFormErrors.notes) setInputFormErrors((prev) => { const next = { ...prev }; delete next.notes; return next; });
                       }}
-                      disabled={isCompleted}
+                      disabled={false}
                       aria-invalid={Boolean(inputFormErrors.notes)}
                       aria-describedby={inputFormErrors.notes ? "task-input-notes-err" : undefined}
                     />
@@ -679,7 +829,7 @@ export default function TaskDetail() {
                 </div>
               )}
 
-              {isInput && !isCompleted && !submissionsLoading && (
+              {isInput && !submissionsLoading && (
                 <div className="task-detail-input-optional-mov">
                   <h4 className="task-detail-input-optional-mov-title">Optional MOV</h4>
                   <p className="task-detail-input-optional-mov-hint">
@@ -698,7 +848,7 @@ export default function TaskDetail() {
                       type="button"
                       className="task-detail-secondary-btn"
                       onClick={handleOptionalMovClick}
-                      disabled={uploading || submitting || isCompleted}
+                      disabled={uploading || submitting}
                       aria-busy={uploading}
                     >
                       {uploading ? (
@@ -741,15 +891,31 @@ export default function TaskDetail() {
                                 {f.original_name}
                               </span>
                               <span className="task-detail-upload-preview-size">{formatFileSize(f.size)}</span>
-                              <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="task-detail-upload-preview-open"
-                              >
-                                <FaExternalLinkAlt aria-hidden="true" />
-                                View file
-                              </a>
+                              <div className="task-detail-upload-preview-actions">
+                                <a
+                                  href={fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="task-detail-upload-preview-open"
+                                >
+                                  <FaExternalLinkAlt aria-hidden="true" />
+                                  View file
+                                </a>
+                                <button
+                                  type="button"
+                                  className="task-detail-upload-preview-download"
+                                  onClick={() => handleDownloadFile(f)}
+                                  disabled={downloadingId === f.id}
+                                  aria-label={`Download ${f.original_name || "file"}`}
+                                >
+                                  {downloadingId === f.id ? (
+                                    <FaSpinner className="spinner" aria-hidden="true" />
+                                  ) : (
+                                    <FaDownload aria-hidden="true" />
+                                  )}
+                                  Download
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );
@@ -759,7 +925,7 @@ export default function TaskDetail() {
                 </div>
               )}
 
-              {isInput && !isCompleted && !submissionsLoading && (
+              {isInput && !submissionsLoading && (
                 <div className="task-detail-upload-submit-section task-detail-input-submit-section">
                   <p className="task-detail-upload-submit-hint">
                     When the form is complete, click the button below to save your data and submit this task to the School Head for validation.
@@ -789,11 +955,48 @@ export default function TaskDetail() {
           )}
 
           {isUpload && (
-            <div className="task-detail-upload">
-              <h3 className="task-detail-upload-title">Uploaded files</h3>
-              <p className="task-detail-upload-hint">
-                Attach supporting documents in PDF or image format. Maximum 10MB per file.
-              </p>
+            <>
+              <div className="task-detail-upload-notes">
+                <h3 className="task-detail-input-title">Notes <span className="task-detail-optional-label">(optional)</span></h3>
+                {submissionsLoading ? (
+                  <div className="task-detail-input-loading">
+                    <FaSpinner className="spinner" aria-hidden="true" />
+                    <span>Loading…</span>
+                  </div>
+                ) : (
+                  <>
+                    <textarea
+                      id="task-detail-upload-notes"
+                      className={`task-detail-input-field task-detail-input-textarea ${uploadNotesError ? "task-detail-input-field-error" : ""}`}
+                      placeholder="Additional notes for this submission"
+                      rows={4}
+                      maxLength={2000}
+                      value={uploadNotes}
+                      onChange={(e) => {
+                        setUploadNotes(e.target.value);
+                        if (uploadNotesError) setUploadNotesError("");
+                      }}
+                      disabled={false}
+                      aria-invalid={Boolean(uploadNotesError)}
+                      aria-describedby={uploadNotesError ? "task-detail-upload-notes-err" : undefined}
+                    />
+                    <div className="task-detail-upload-notes-meta">
+                      <span className="task-detail-upload-notes-count" aria-live="polite">{uploadNotes.length}/2000</span>
+                    </div>
+                    {uploadNotesError && (
+                      <span id="task-detail-upload-notes-err" className="task-detail-input-error" role="alert">
+                        {uploadNotesError}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="task-detail-upload">
+                <h3 className="task-detail-upload-title">Uploaded files</h3>
+                <p className="task-detail-upload-hint">
+                  Attach supporting documents in PDF or image format. Maximum 10MB per file.
+                </p>
               <div className="task-detail-upload-actions">
                 <input
                   ref={fileInputRef}
@@ -808,7 +1011,7 @@ export default function TaskDetail() {
                   type="button"
                   className="task-detail-primary-btn"
                   onClick={handleUploadClick}
-                  disabled={uploading || submitting || isCompleted}
+                  disabled={uploading || submitting}
                   aria-busy={uploading}
                 >
                   {uploading ? (
@@ -860,15 +1063,31 @@ export default function TaskDetail() {
                               {f.original_name}
                             </span>
                             <span className="task-detail-upload-preview-size">{formatFileSize(f.size)}</span>
-                            <a
-                              href={fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="task-detail-upload-preview-open"
-                            >
-                              <FaExternalLinkAlt aria-hidden="true" />
-                              View file
-                            </a>
+                            <div className="task-detail-upload-preview-actions">
+                              <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="task-detail-upload-preview-open"
+                              >
+                                <FaExternalLinkAlt aria-hidden="true" />
+                                View file
+                              </a>
+                              <button
+                                type="button"
+                                className="task-detail-upload-preview-download"
+                                onClick={() => handleDownloadFile(f)}
+                                disabled={downloadingId === f.id}
+                                aria-label={`Download ${f.original_name || "file"}`}
+                              >
+                                {downloadingId === f.id ? (
+                                  <FaSpinner className="spinner" aria-hidden="true" />
+                                ) : (
+                                  <FaDownload aria-hidden="true" />
+                                )}
+                                Download
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -904,6 +1123,7 @@ export default function TaskDetail() {
                 </div>
               )}
             </div>
+          </>
           )}
 
           {isCompleted && (
@@ -915,5 +1135,57 @@ export default function TaskDetail() {
         </div>
       </div>
     </div>
+    {(showLeaveConfirm || blocker.state === "blocked") &&
+      createPortal(
+        <div
+          className="task-detail-leave-overlay"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="task-detail-leave-title"
+          aria-describedby="task-detail-leave-desc"
+        >
+          <div
+            className="task-detail-leave-backdrop modal-backdrop-animation"
+            onClick={handleStayLeaveModal}
+            onKeyDown={(e) => e.key === "Enter" && handleStayLeaveModal()}
+            role="button"
+            tabIndex={0}
+            aria-label="Close"
+          />
+          <div className="task-detail-leave-wrap">
+            <div className="task-detail-leave-modal modal-content-animation">
+              <header className="task-detail-leave-header">
+                <h2 id="task-detail-leave-title" className="task-detail-leave-title">
+                  Progress will be lost
+                </h2>
+              </header>
+              <div className="task-detail-leave-body">
+                <p id="task-detail-leave-desc" className="task-detail-leave-text">
+                  You have unsaved progress. Leaving this page will discard your uploads and notes. Submit for validation first to save your work.
+                </p>
+                <p className="task-detail-leave-text-secondary">Do you want to leave?</p>
+              </div>
+              <footer className="task-detail-leave-footer">
+                <button
+                  type="button"
+                  className="task-detail-leave-btn-cancel"
+                  onClick={handleStayLeaveModal}
+                >
+                  Stay
+                </button>
+                <button
+                  type="button"
+                  className="task-detail-leave-btn-leave"
+                  onClick={handleConfirmLeave}
+                >
+                  Leave
+                </button>
+              </footer>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+  </>
   );
 }

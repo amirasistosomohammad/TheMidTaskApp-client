@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../../services/apiClient";
@@ -38,8 +38,11 @@ export default function CreateSchoolHead() {
     position: "",
     division: "",
     school_name: "",
+    school_head_id: "",
   });
   const [errors, setErrors] = useState({});
+  const [schoolHeads, setSchoolHeads] = useState([]);
+  const [schoolHeadsLoading, setSchoolHeadsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +70,28 @@ export default function CreateSchoolHead() {
     return Object.keys(next).length === 0;
   };
 
+  useEffect(() => {
+    // Load active School Heads for AO assignment when needed.
+    const loadSchoolHeads = async () => {
+      setSchoolHeadsLoading(true);
+      try {
+        const res = await apiRequest("/admin/personnel?status=active&role=school_head", { auth: true });
+        const list = Array.isArray(res?.personnel) ? res.personnel : [];
+        setSchoolHeads(list);
+      } catch (err) {
+        // Soft-fail: AO creation can still proceed without pre-selecting a School Head.
+        showToast.error(err?.message || "Failed to load School Heads.");
+        setSchoolHeads([]);
+      } finally {
+        setSchoolHeadsLoading(false);
+      }
+    };
+
+    if (form.role === "administrative_officer" && schoolHeads.length === 0 && !schoolHeadsLoading) {
+      void loadSchoolHeads();
+    }
+  }, [form.role, schoolHeads.length, schoolHeadsLoading]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -85,6 +110,10 @@ export default function CreateSchoolHead() {
           position: form.position.trim() || null,
           division: form.division.trim() || null,
           school_name: form.school_name.trim() || null,
+          school_head_id:
+            form.role === "administrative_officer" && form.school_head_id
+              ? Number(form.school_head_id)
+              : undefined,
         },
       });
       setCredentials(res.credentials || { email: res.user?.email, password: form.password });
@@ -123,6 +152,7 @@ export default function CreateSchoolHead() {
       position: "",
       division: "",
       school_name: "",
+      school_head_id: "",
     });
     setErrors({});
   };
@@ -246,6 +276,31 @@ export default function CreateSchoolHead() {
               <option value="administrative_officer">Administrative Officer</option>
             </select>
           </div>
+
+          {form.role === "administrative_officer" && (
+            <div className="create-school-head-form-group">
+              <label htmlFor="csh-school-head" className="create-school-head-label">
+                Assigned School Head <span className="create-school-head-optional">(optional)</span>
+              </label>
+              <select
+                id="csh-school-head"
+                name="school_head_id"
+                value={form.school_head_id}
+                onChange={handleChange}
+                className="create-school-head-select"
+                disabled={submitting || schoolHeadsLoading}
+              >
+                <option value="">
+                  {schoolHeadsLoading ? "Loading School Heads…" : "Select School Head (optional)"}
+                </option>
+                {schoolHeads.map((sh) => (
+                  <option key={sh.id} value={sh.id}>
+                    {sh.name} {sh.school_name ? `· ${sh.school_name}` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="create-school-head-form-group">
             <label htmlFor="csh-employee-id" className="create-school-head-label">

@@ -236,6 +236,7 @@
   background: var(--input-bg, #fff);
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .assign-task-users-header {
@@ -245,6 +246,8 @@
   padding: 0.5rem 0.75rem;
   background: var(--sidebar-bg, #eef2f7);
   border-bottom: 1px solid var(--sidebar-border, #d1dae6);
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .assign-task-select-all {
@@ -341,6 +344,8 @@
   padding: 0.5rem;
   max-height: 12rem;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .assign-task-no-users {
@@ -380,6 +385,7 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s ease;
+  min-width: 0;
 }
 
 .assign-task-user-check:hover {
@@ -387,6 +393,7 @@
 }
 
 .assign-task-user-check input {
+  flex-shrink: 0;
   width: 1rem;
   height: 1rem;
   accent-color: var(--primary-blue, #0b558f);
@@ -396,12 +403,21 @@
 .assign-task-user-name {
   font-weight: 500;
   color: var(--sidebar-text, #1e3a5f);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .assign-task-user-email {
   font-size: 0.8125rem;
   color: var(--footer-text, #4a5568);
   margin-left: auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Assignment mode */
@@ -559,4 +575,40 @@
 
 .assign-task-bulk-btn .spinner {
   font-size: 0.95rem;
+}
+
+/* Assign-to section: responsive on small screens */
+@media (max-width: 575.98px) {
+  .assign-task-users-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.5rem 0.625rem;
+  }
+
+  .assign-task-select-all {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .assign-task-users-search,
+  .assign-task-users-search-input-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .assign-task-form {
+    padding: 1rem;
+  }
+
+  .assign-task-users-header {
+    flex-wrap: wrap;
+  }
+
+  .assign-task-users-search {
+    flex: 1 1 100%;
+    min-width: 12rem;
+  }
 }

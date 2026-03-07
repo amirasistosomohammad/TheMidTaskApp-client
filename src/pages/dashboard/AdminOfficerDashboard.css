@@ -145,7 +145,76 @@
   font-size: 1.25rem;
 }
 
-/* Reminders panel */
+/* Top summary row – status + reminders, corporate cards */
+.ao-dashboard-top-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1.75fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  align-items: stretch;
+}
+
+.ao-dashboard-card {
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ao-dashboard-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  background: var(--sidebar-bg, #f8f9fa);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.ao-dashboard-card-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.ao-dashboard-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 10px;
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  color: var(--primary-blue, #0b558f);
+  flex-shrink: 0;
+}
+
+.ao-dashboard-card-title {
+  margin: 0 0 0.2rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.ao-dashboard-card-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.ao-dashboard-reminders-body {
+  padding: 0.75rem 1.25rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Reminders panel (legacy selector used by other layouts) */
 .ao-dashboard-reminders {
   margin-bottom: 1.5rem;
   padding: 1rem 1.25rem;
@@ -287,12 +356,12 @@
   text-decoration: underline;
 }
 
-/* KPI grid – matches Personnel Directory */
+/* KPI grid – inside status card */
 .ao-dashboard-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  padding: 0.85rem 1.25rem 1.1rem;
 }
 
 .ao-dashboard-kpi-card {
@@ -391,12 +460,18 @@
 }
 
 @media (max-width: 767.98px) {
-  .ao-dashboard-reminders {
-    padding: 0.875rem 1rem;
+  .ao-dashboard-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ao-dashboard-reminders,
+  .ao-dashboard-card {
+    margin-bottom: 1rem;
   }
 
   .ao-dashboard-kpi-grid {
     grid-template-columns: 1fr;
+    padding: 0.85rem 1rem 1.1rem;
   }
 }
 
@@ -551,6 +626,22 @@
 .ao-dashboard-task-card-mov-label {
   font-weight: 600;
   color: var(--sidebar-heading-text, #5a6c7d);
+}
+
+/* Files archive – action row inside task-style card */
+.ao-dashboard-task-card-footer {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (max-width: 575.98px) {
+  .ao-dashboard-task-card-footer .task-detail-primary-btn,
+  .ao-dashboard-task-card-footer .task-detail-secondary-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* Pending note for users awaiting approval */

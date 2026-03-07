@@ -260,6 +260,13 @@
   line-height: 1.45;
 }
 
+.task-detail-optional-label {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--footer-text, #4a5568);
+}
+
 .task-detail-input-loading {
   display: flex;
   align-items: center;
@@ -474,6 +481,34 @@
   border-top: 1px solid var(--sidebar-border, #d1dae6);
 }
 
+/* Upload task notes (personnel) */
+.task-detail-upload-notes {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  max-width: 36rem;
+}
+
+.task-detail-upload-notes .task-detail-input-title,
+.task-detail-upload-notes .task-detail-input-hint {
+  margin-bottom: 0.5rem;
+}
+
+.task-detail-upload-notes-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.task-detail-upload-notes-count {
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+}
+
 .task-detail-upload {
   margin-bottom: 1.5rem;
   padding: 1rem 1.25rem;
@@ -641,6 +676,44 @@
   opacity: 0.9;
 }
 
+.task-detail-upload-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.task-detail-upload-preview-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-blue, #0b558f);
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.task-detail-upload-preview-download:hover:not(:disabled) {
+  background: var(--sidebar-bg, #eef2f7);
+  border-color: var(--primary-blue, #0b558f);
+  transform: translateY(-1px);
+}
+
+.task-detail-upload-preview-download:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.task-detail-upload-preview-download:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 /* Submit for validation – separate section, solid primary button */
 .task-detail-upload-submit-section {
   margin-top: 1.5rem;
@@ -677,6 +750,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
 }
 
 .task-detail-primary-btn:hover {
@@ -701,6 +775,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
 }
 
 .task-detail-secondary-btn:hover {
@@ -712,6 +787,12 @@
 
 .task-detail-secondary-btn:active {
   transform: translateY(0);
+}
+
+/* Slightly compact variant for files archive actions */
+.files-archive-action-btn {
+  font-size: 0.8rem;
+  padding: 0.45rem 0.95rem;
 }
 
 /* Completed message */
@@ -764,4 +845,123 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+/* Leave confirmation modal – corporate / government style */
+.task-detail-leave-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.task-detail-leave-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.task-detail-leave-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 26rem;
+}
+
+.task-detail-leave-modal {
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 12px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.task-detail-leave-header {
+  padding: 1.25rem 1.5rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px 12px 0 0;
+}
+
+.task-detail-leave-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.task-detail-leave-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.task-detail-leave-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--sidebar-text, #1e3a5f);
+  line-height: 1.5;
+}
+
+.task-detail-leave-text-secondary {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  color: var(--sidebar-text, #1e3a5f);
+  line-height: 1.5;
+}
+
+.task-detail-leave-footer {
+  padding: 1rem 1.5rem;
+  background: var(--sidebar-bg, #eef2f7);
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.task-detail-leave-btn-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.task-detail-leave-btn-cancel:hover {
+  background: #f8fafc;
+  border-color: var(--primary-blue, #0b558f);
+  color: var(--primary-blue, #0b558f);
+}
+
+.task-detail-leave-btn-leave {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--btn-primary-text, #fff);
+  background: var(--btn-primary-bg, var(--primary-blue, #0b558f));
+  border: 1px solid var(--btn-primary-bg, var(--primary-blue, #0b558f));
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.22s ease, border-color 0.22s ease;
+}
+
+.task-detail-leave-btn-leave:hover {
+  background: var(--btn-primary-hover, var(--primary-blue-dark, #094a75));
+  border-color: var(--btn-primary-hover, var(--primary-blue-dark, #094a75));
+  color: #fff;
 }

@@ -50,6 +50,7 @@ export default function TaskList() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteModalClosing, setDeleteModalClosing] = useState(false);
   const [kpiModalStat, setKpiModalStat] = useState(null);
+  const [kpiModalClosing, setKpiModalClosing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -185,14 +186,23 @@ export default function TaskList() {
     total: tasks.length,
   }), [tasks]);
 
+  const handleCloseKpiModal = useCallback(() => {
+    if (kpiModalClosing) return;
+    setKpiModalClosing(true);
+    setTimeout(() => {
+      setKpiModalClosing(false);
+      setKpiModalStat(null);
+    }, 200);
+  }, [kpiModalClosing]);
+
   useEffect(() => {
     if (!kpiModalStat) return;
     const onKeyDown = (e) => {
-      if (e.key === "Escape") setKpiModalStat(null);
+      if (e.key === "Escape") handleCloseKpiModal();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [kpiModalStat]);
+  }, [kpiModalStat, handleCloseKpiModal]);
 
   return (
     <div className="task-list-page page-transition-enter">
@@ -450,7 +460,7 @@ export default function TaskList() {
             )}
           </div>
 
-          {/* KPI full count modal */}
+          {/* KPI full count modal – smooth close animation */}
           {kpiModalStat &&
             createPortal(
               <div
@@ -461,17 +471,26 @@ export default function TaskList() {
                 aria-describedby="task-list-kpi-modal-desc"
               >
                 <div
-                  className="personnel-dir-backdrop modal-backdrop-animation"
-                  onClick={() => setKpiModalStat(null)}
-                  onKeyDown={(e) => e.key === "Enter" && setKpiModalStat(null)}
+                  className={`personnel-dir-backdrop modal-backdrop-animation${kpiModalClosing ? " exit" : ""}`}
+                  onClick={() => {
+                    if (kpiModalClosing) return;
+                    setKpiModalClosing(true);
+                    setTimeout(() => { setKpiModalClosing(false); setKpiModalStat(null); }, 200);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !kpiModalClosing) {
+                      setKpiModalClosing(true);
+                      setTimeout(() => { setKpiModalClosing(false); setKpiModalStat(null); }, 200);
+                    }
+                  }}
                   role="button"
                   tabIndex={0}
                   aria-label="Close"
                 />
                 <div className="personnel-dir-wrap personnel-dir-kpi-modal-wrap">
-                  <div className="personnel-dir-modal personnel-dir-kpi-modal modal-content-animation">
-                    <div className="personnel-dir-modal-header">
-                      <div>
+                  <div className={`personnel-dir-modal personnel-dir-kpi-modal modal-content-animation${kpiModalClosing ? " exit" : ""}`}>
+                    <header className="personnel-dir-modal-header">
+                      <div className="personnel-dir-modal-header-text">
                         <h2 id="task-list-kpi-modal-title" className="personnel-dir-modal-title">
                           Total tasks
                         </h2>
@@ -482,12 +501,16 @@ export default function TaskList() {
                       <button
                         type="button"
                         className="personnel-dir-modal-close"
-                        onClick={() => setKpiModalStat(null)}
+                        onClick={() => {
+                          if (kpiModalClosing) return;
+                          setKpiModalClosing(true);
+                          setTimeout(() => { setKpiModalClosing(false); setKpiModalStat(null); }, 200);
+                        }}
                         aria-label="Close"
                       >
                         ×
                       </button>
-                    </div>
+                    </header>
                     <div className="personnel-dir-modal-body personnel-dir-kpi-modal-body">
                       <div className="personnel-dir-kpi-modal-value">
                         {stats.total}
@@ -495,10 +518,20 @@ export default function TaskList() {
                       <p className="personnel-dir-kpi-modal-label">
                         Total tasks in the system
                       </p>
-                      <button type="button" className="personnel-dir-btn-close" onClick={() => setKpiModalStat(null)}>
+                    </div>
+                    <footer className="personnel-dir-modal-footer">
+                      <button
+                        type="button"
+                        className="personnel-dir-btn-close"
+                        onClick={() => {
+                          if (kpiModalClosing) return;
+                          setKpiModalClosing(true);
+                          setTimeout(() => { setKpiModalClosing(false); setKpiModalStat(null); }, 200);
+                        }}
+                      >
                         Close
                       </button>
-                    </div>
+                    </footer>
                   </div>
                 </div>
               </div>,

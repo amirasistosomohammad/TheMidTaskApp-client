@@ -4,7 +4,7 @@ import Topbar from "./Topbar";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
 import { useAuth } from "../hooks/useAuth";
-import { apiRequest } from "../services/apiClient";
+import { apiRequest, normalizeLogoUrl } from "../services/apiClient";
 
 /**
  * Main app layout for authenticated routes (TasDoneNa-style).
@@ -121,7 +121,7 @@ const Layout = () => {
       <Topbar
         onToggleSidebar={handleToggleSidebar}
         appName={systemSettings.app_name}
-        logoUrl={systemSettings.logo_url}
+        logoUrl={normalizeLogoUrl(systemSettings.logo_url) || systemSettings.logo_url}
         settingsLoading={systemSettingsLoading}
       />
       <div id="layoutSidenav">

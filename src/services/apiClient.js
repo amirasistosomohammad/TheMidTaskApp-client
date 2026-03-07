@@ -4,6 +4,22 @@ if (!import.meta.env.VITE_LARAVEL_API) {
   console.warn("VITE_LARAVEL_API is not set. Using /api (works with Vite proxy in dev).");
 }
 
+/**
+ * Normalize logo/storage URL for use in img src (fix deployment typos and relative paths).
+ * Fixes "http://https//..." and "https//..." so images load over HTTPS.
+ * Resolves relative paths (starting with /) to absolute using current origin.
+ */
+export function normalizeLogoUrl(url) {
+  if (url == null || url === "") return null;
+  let u = String(url).trim();
+  u = u.replace(/^http:\/\/https?\/\//i, "https://");
+  u = u.replace(/^https\/\//i, "https://");
+  if (u.startsWith("/")) {
+    u = (typeof window !== "undefined" ? window.location.origin : "") + u;
+  }
+  return u || null;
+}
+
 export function getAuthToken() {
   return localStorage.getItem("midtask_token");
 }

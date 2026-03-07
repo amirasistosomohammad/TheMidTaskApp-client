@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FaCog, FaLock, FaSpinner, FaImage, FaSave, FaEye, FaEyeSlash, FaDatabase, FaDownload, FaClock, FaCalendarCheck } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
-import { apiRequest, apiRequestFormData, getAuthToken } from "../../services/apiClient";
+import { apiRequest, apiRequestFormData, getAuthToken, normalizeLogoUrl } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import "./CentralAdminSettings.css";
 
@@ -716,7 +716,7 @@ export default function CentralAdminSettings() {
                       <div className="system-settings-logo-row">
                         <div className="system-settings-logo-preview">
                           {systemSettings.logo_url ? (
-                            <img src={systemSettings.logo_url} alt="App logo" />
+                            <img src={normalizeLogoUrl(systemSettings.logo_url) || systemSettings.logo_url} alt="App logo" />
                           ) : (
                             <span className="system-settings-logo-placeholder">
                               <FaImage aria-hidden="true" />

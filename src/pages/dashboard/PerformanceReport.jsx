@@ -3,6 +3,7 @@ import { FaFileExcel, FaSpinner, FaUser, FaCalendarAlt } from "react-icons/fa";
 import { apiRequest, apiDownload } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import { useAuth } from "../../hooks/useAuth";
+import PersonnelPendingGate from "../../components/PersonnelPendingGate";
 import "./Timeline.css";
 import "./PerformanceReport.css";
 
@@ -102,7 +103,8 @@ export default function PerformanceReport() {
   }
 
   return (
-    <div className="timeline-page page-transition-enter perf-report-page">
+    <PersonnelPendingGate message="Your performance report will be available once your account has been approved.">
+      <div className="timeline-page page-transition-enter perf-report-page">
       <header className="timeline-header" aria-label="Performance report page header">
         <div className="timeline-header-inner">
           <div className="timeline-header-text">
@@ -241,5 +243,6 @@ export default function PerformanceReport() {
         </p>
       </section>
     </div>
+    </PersonnelPendingGate>
   );
 }

@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { apiRequest } from "../../services/apiClient";
 import PersonnelAccountStatus from "../../components/PersonnelAccountStatus";
+import PersonnelPendingGate from "../../components/PersonnelPendingGate";
 import "./AdminOfficerDashboard.css";
 import "./MyTasks.css";
 
@@ -89,10 +90,11 @@ export default function Submissions() {
   const completedCount = completed.length;
 
   return (
-    <div className="ao-dashboard-page page-transition-enter">
-      <PersonnelAccountStatus />
+    <PersonnelPendingGate message="Your submissions will be available once your account has been approved.">
+      <div className="ao-dashboard-page page-transition-enter">
+        <PersonnelAccountStatus />
 
-      <header className="ao-dashboard-header">
+        <header className="ao-dashboard-header">
         <div className="ao-dashboard-header-inner">
           <div className="ao-dashboard-header-text">
             <span className="ao-dashboard-title-icon" aria-hidden="true">
@@ -269,7 +271,8 @@ export default function Submissions() {
           </div>
         </>
       )}
-    </div>
+      </div>
+    </PersonnelPendingGate>
   );
 }
 

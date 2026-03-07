@@ -4,6 +4,7 @@ import { useNavigate, Link, useBlocker } from "react-router-dom";
 import { FaPlus, FaArrowLeft, FaSpinner } from "react-icons/fa";
 import { apiRequest } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
+import PersonnelPendingGate from "../../components/PersonnelPendingGate";
 import "./CreateTask.css";
 import "./PersonnelDirectory.css";
 
@@ -164,6 +165,7 @@ export default function CreatePersonalTask() {
   };
 
   return (
+    <PersonnelPendingGate message="Creating personal tasks will be available once your account has been approved.">
     <div className="create-task-page page-transition-enter">
       <header className="create-task-header">
         <div className="create-task-header-inner">
@@ -425,6 +427,7 @@ export default function CreatePersonalTask() {
           document.body
         )}
     </div>
+    </PersonnelPendingGate>
   );
 }
 

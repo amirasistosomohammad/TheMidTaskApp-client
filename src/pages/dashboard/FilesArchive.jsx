@@ -13,6 +13,7 @@ import {
 import { apiRequest, getAuthToken } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import PersonnelAccountStatus from "../../components/PersonnelAccountStatus";
+import PersonnelPendingGate from "../../components/PersonnelPendingGate";
 import "./AdminOfficerDashboard.css";
 import "./MyTasks.css";
 import "./TaskList.css";
@@ -189,10 +190,11 @@ export default function FilesArchive() {
   };
 
   return (
-    <div className="ao-dashboard-page page-transition-enter">
-      <PersonnelAccountStatus />
+    <PersonnelPendingGate message="Your files archive will be available once your account has been approved.">
+      <div className="ao-dashboard-page page-transition-enter">
+        <PersonnelAccountStatus />
 
-      <header className="ao-dashboard-header">
+        <header className="ao-dashboard-header">
         <div className="ao-dashboard-header-inner">
           <div className="ao-dashboard-header-text">
             <span className="ao-dashboard-title-icon" aria-hidden="true">
@@ -393,7 +395,8 @@ export default function FilesArchive() {
           </div>
         </>
       )}
-    </div>
+      </div>
+    </PersonnelPendingGate>
   );
 }
 

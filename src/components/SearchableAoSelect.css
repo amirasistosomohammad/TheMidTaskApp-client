@@ -1,0 +1,91 @@
+/* Searchable AO combobox – same UX as CPC accounting journal entry account combobox */
+.searchable-ao-select-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.searchable-ao-select-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--background-white, #fff);
+  color: var(--sidebar-text, #1e3a5f);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.searchable-ao-select-input::placeholder {
+  color: var(--footer-text, #4a5568);
+}
+
+.searchable-ao-select-input:hover:not(:disabled) {
+  border-color: var(--sidebar-border, #d1dae6);
+}
+
+.searchable-ao-select-input:focus {
+  outline: none;
+  border-color: var(--primary-blue, #0b558f);
+  box-shadow: 0 0 0 2px rgba(11, 85, 143, 0.15);
+}
+
+.searchable-ao-select-input:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  background: var(--sidebar-bg, #f3f4f8);
+}
+
+/* Dropdown list – portaled, fixed position, responsive */
+.searchable-ao-select-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0;
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.searchable-ao-select-option {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  transition: background-color 0.15s ease;
+}
+
+.searchable-ao-select-option:hover,
+.searchable-ao-select-option[data-highlighted="true"] {
+  background: var(--sidebar-bg, #f3f4f8);
+}
+
+.searchable-ao-select-option-name {
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.searchable-ao-select-option-meta {
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+}
+
+.searchable-ao-select-no-match {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--footer-text, #4a5568);
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #d1dae6);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive: constrain dropdown width on small viewports */
+@media (max-width: 575.98px) {
+  .searchable-ao-select-list,
+  .searchable-ao-select-no-match {
+    max-width: calc(100vw - 2rem);
+  }
+}

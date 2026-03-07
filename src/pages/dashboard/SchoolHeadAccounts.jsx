@@ -25,6 +25,7 @@ import {
 } from "react-icons/fa";
 import { apiRequest, apiRequestFormData } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
+import SearchableAoSelect from "../../components/SearchableAoSelect";
 import "./AccountApprovals.css";
 import "./PersonnelDirectory.css";
 import "./SchoolHeadAccounts.css";
@@ -1259,23 +1260,15 @@ export default function SchoolHeadAccounts() {
                           <label className="school-head-accounts-assignments-label">
                             <span>Assign Administrative Officer</span>
                             <div className="school-head-accounts-assignments-select-row">
-                              <select
-                                className="school-head-accounts-assignments-select"
+                              <SearchableAoSelect
+                                options={availableAos}
                                 value={selectedAoId}
-                                onChange={(e) => setSelectedAoId(e.target.value)}
-                                disabled={assignSubmitting || availableAosLoading}
-                              >
-                                <option value="">
-                                  {availableAosLoading
-                                    ? "Loading Administrative Officers…"
-                                    : "Select Administrative Officer"}
-                                </option>
-                                {availableAos.map((ao) => (
-                                  <option key={ao.id} value={ao.id}>
-                                    {ao.name} {ao.school_name ? `· ${ao.school_name}` : ""}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={setSelectedAoId}
+                                loading={availableAosLoading}
+                                disabled={assignSubmitting}
+                                placeholder="Search by name or school..."
+                                aria-label="Select Administrative Officer"
+                              />
                               <button
                                 type="submit"
                                 className="school-head-accounts-assignments-add-btn"
@@ -1632,25 +1625,17 @@ export default function SchoolHeadAccounts() {
                           <label className="school-head-accounts-assignments-label">
                             <span>Add Administrative Officer</span>
                             <div className="school-head-accounts-assignments-select-row">
-                              <select
-                                className="school-head-accounts-assignments-select"
+                              <SearchableAoSelect
+                                options={availableAos.filter(
+                                  (ao) => !addModalAosToAssign.some((a) => Number(a.id) === Number(ao.id))
+                                )}
                                 value={addModalSelectedAoId}
-                                onChange={(e) => setAddModalSelectedAoId(e.target.value)}
-                                disabled={addSubmitting || addModalAosLoading}
-                              >
-                                <option value="">
-                                  {addModalAosLoading
-                                    ? "Loading Administrative Officers…"
-                                    : "Select Administrative Officer"}
-                                </option>
-                                {availableAos
-                                  .filter((ao) => !addModalAosToAssign.some((a) => Number(a.id) === Number(ao.id)))
-                                  .map((ao) => (
-                                    <option key={ao.id} value={ao.id}>
-                                      {ao.name} {ao.school_name ? ` · ${ao.school_name}` : ""}
-                                    </option>
-                                  ))}
-                              </select>
+                                onChange={setAddModalSelectedAoId}
+                                loading={addModalAosLoading}
+                                disabled={addSubmitting}
+                                placeholder="Search by name or school..."
+                                aria-label="Select Administrative Officer"
+                              />
                               <button
                                 type="button"
                                 className="school-head-accounts-assignments-add-btn"

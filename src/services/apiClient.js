@@ -22,31 +22,39 @@ function getStorageBaseUrl() {
 
 /**
  * Normalize logo/storage URL for use in img src.
- * - Fixes "http://https//..." and "https//..." so images load over HTTPS.
+ * - Forces https when the URL is http (avoids Mixed Content).
+ * - Fixes "http://https//..." and "https//..." typos.
  * - Resolves relative paths (starting with /) to absolute using current origin.
- * - If the URL is same-origin (client app) and we have an API base, rewrites to the API storage URL
- *   so the image is loaded from the backend (avoids 403 when the client does not proxy /storage).
+ * - If the URL is same-origin and we have an API base with a path, rewrites so the request
+ *   goes to the server (e.g. .../themidtaskapp-server/api/storage/...).
  */
 export function normalizeLogoUrl(url) {
   if (url == null || url === "") return null;
   let u = String(url).trim();
   u = u.replace(/^http:\/\/https?\/\//i, "https://");
   u = u.replace(/^https\/\//i, "https://");
+  if (u.startsWith("http://") && typeof window !== "undefined" && window.location?.protocol === "https:") {
+    u = "https://" + u.slice(7);
+  }
   if (u.startsWith("/")) {
     u = (typeof window !== "undefined" ? window.location.origin : "") + u;
   }
   if (typeof window !== "undefined" && u) {
     try {
       const urlObj = new URL(u);
+      const apiStorageMatch = u.match(/\/api\/storage\/[^?#]+/);
       const storagePathMatch = u.match(/\/storage\/[^?#]+/);
+      const storagePath = apiStorageMatch ? apiStorageMatch[0] : storagePathMatch ? "/api" + storagePathMatch[0] : null;
       if (
-        storagePathMatch &&
+        storagePath &&
         urlObj.origin === window.location.origin &&
         getStorageBaseUrl()
       ) {
         const storageBase = getStorageBaseUrl();
-        if (storageBase && new URL(storageBase).origin !== window.location.origin) {
-          u = storageBase.replace(/\/$/, "") + storagePathMatch[0];
+        const baseUrl = new URL(storageBase);
+        const needsRewrite = baseUrl.pathname !== "/" && baseUrl.pathname !== "";
+        if (storageBase && needsRewrite) {
+          u = storageBase.replace(/\/$/, "") + storagePath;
         }
       }
     } catch {

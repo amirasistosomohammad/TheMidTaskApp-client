@@ -34,6 +34,19 @@ export default function PerformanceReport() {
   const [loadingOfficers, setLoadingOfficers] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [errors, setErrors] = useState({});
+  const [templateAvailable, setTemplateAvailable] = useState(null); // null = loading, true/false = result
+
+  useEffect(() => {
+    let cancelled = false;
+    apiRequest("/reports/template-status", { auth: true })
+      .then((res) => {
+        if (!cancelled) setTemplateAvailable(res?.template_available ?? false);
+      })
+      .catch(() => {
+        if (!cancelled) setTemplateAvailable(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const fetchOfficers = useCallback(async () => {
     if (!isSchoolHead) return;
@@ -126,6 +139,18 @@ export default function PerformanceReport() {
       <section className="perf-report-card" aria-label="Report options">
         <div className="perf-report-card-inner">
           <h2 className="perf-report-section-title">Report options</h2>
+
+          {templateAvailable === false && (
+            <div className="perf-report-template-warning" role="alert">
+              Report template not found on the server. Add <strong>Sample Performance Report MIDTASK.xlsx</strong> to{" "}
+              <code>server/storage/app/reports/</code> in your repo and redeploy so Excel generation works.
+            </div>
+          )}
+          {templateAvailable === true && (
+            <p className="perf-report-template-ok" aria-live="polite">
+              Report template is available. You can generate the Excel report below.
+            </p>
+          )}
 
           {isSchoolHead && (
             <div className="perf-report-field">

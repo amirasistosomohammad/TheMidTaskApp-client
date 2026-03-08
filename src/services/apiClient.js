@@ -5,9 +5,27 @@ if (!import.meta.env.VITE_LARAVEL_API) {
 }
 
 /**
- * Normalize logo/storage URL for use in img src (fix deployment typos and relative paths).
- * Fixes "http://https//..." and "https//..." so images load over HTTPS.
- * Resolves relative paths (starting with /) to absolute using current origin.
+ * Get the storage base URL (API origin without /api) for logo and other public storage.
+ * Used so logo images load from the API when the server returns a URL that hits the client (403).
+ */
+function getStorageBaseUrl() {
+  const base = import.meta.env.VITE_LARAVEL_API || "";
+  if (!base) return null;
+  try {
+    const u = new URL(base.startsWith("/") ? `${typeof window !== "undefined" ? window.location.origin : ""}${base}` : base);
+    const path = u.pathname.replace(/\/api\/?$/, "").replace(/\/$/, "") || "";
+    return `${u.origin}${path ? `/${path.replace(/^\//, "")}` : ""}`;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Normalize logo/storage URL for use in img src.
+ * - Fixes "http://https//..." and "https//..." so images load over HTTPS.
+ * - Resolves relative paths (starting with /) to absolute using current origin.
+ * - If the URL is same-origin (client app) and we have an API base, rewrites to the API storage URL
+ *   so the image is loaded from the backend (avoids 403 when the client does not proxy /storage).
  */
 export function normalizeLogoUrl(url) {
   if (url == null || url === "") return null;
@@ -16,6 +34,24 @@ export function normalizeLogoUrl(url) {
   u = u.replace(/^https\/\//i, "https://");
   if (u.startsWith("/")) {
     u = (typeof window !== "undefined" ? window.location.origin : "") + u;
+  }
+  if (typeof window !== "undefined" && u) {
+    try {
+      const urlObj = new URL(u);
+      const storagePathMatch = u.match(/\/storage\/[^?#]+/);
+      if (
+        storagePathMatch &&
+        urlObj.origin === window.location.origin &&
+        getStorageBaseUrl()
+      ) {
+        const storageBase = getStorageBaseUrl();
+        if (storageBase && new URL(storageBase).origin !== window.location.origin) {
+          u = storageBase.replace(/\/$/, "") + storagePathMatch[0];
+        }
+      }
+    } catch {
+      // ignore
+    }
   }
   return u || null;
 }

@@ -699,10 +699,10 @@
   color: var(--footer-text, #6b7280);
 }
 
+/* max-height set dynamically in JS so it fits content; fallback in inline style */
 .timeline-month-body {
   overflow: hidden;
   transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.2s ease;
-  max-height: 1000px;
   opacity: 1;
   margin-top: 0.5rem;
 }
@@ -711,6 +711,10 @@
   max-height: 0;
   opacity: 0;
   margin-top: 0;
+}
+
+.timeline-month-body-inner {
+  min-width: 0;
 }
 
 /* Timeline track – vertical line + items */
@@ -832,6 +836,9 @@
   font-weight: 600;
   color: var(--sidebar-text, #1e3a5f);
   line-height: 1.35;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .timeline-item-meta {

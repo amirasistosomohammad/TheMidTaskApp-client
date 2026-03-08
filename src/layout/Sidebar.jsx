@@ -18,6 +18,7 @@ import {
   FaUserTie,
   FaUser,
   FaFileExcel,
+  FaPenFancy,
 } from "react-icons/fa";
 import { useAuth } from "../hooks/useAuth";
 import { getHomePathForUser } from "../utils/authRouting";
@@ -138,6 +139,7 @@ const Sidebar = ({ onCloseSidebar, pendingApprovalsCount }) => {
 
               <div className="sb-sidenav-menu-heading">Account</div>
               {navLink("/profile", <FaUser className="sb-nav-link-icon" />, "Profile")}
+              {navLink("/school-head/signature", <FaPenFancy className="sb-nav-link-icon" />, "Digital signature")}
             </>
           )}
 

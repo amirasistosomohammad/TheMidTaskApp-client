@@ -1,0 +1,96 @@
+/* Digital signature — same system as Profile / CentralAdminSettings; only layout + Remove button overrides */
+
+/* Single column, centered (consistent with header alignment) */
+.signature-settings-row-single {
+  grid-template-columns: 1fr;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Signature preview: wider rectangle (not square like profile photo) */
+.signature-settings-logo-preview {
+  width: 100%;
+  max-width: 20rem;
+  min-height: 6rem;
+  height: auto;
+  aspect-ratio: 2.5 / 1;
+}
+
+.signature-settings-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.signature-settings-placeholder {
+  font-size: 0.875rem;
+  color: var(--footer-text, #6b7280);
+  padding: 0.5rem;
+  text-align: center;
+}
+
+/* Upload preview — confirm before saving (corporate / government style) */
+.signature-settings-upload-preview-wrap {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: rgba(var(--primary-blue-rgb, 11, 85, 143), 0.04);
+  border-left: 4px solid var(--primary-blue, #0b558f);
+  border-radius: 0 8px 8px 0;
+}
+
+.signature-settings-upload-preview-wrap .system-settings-label {
+  margin-bottom: 0.5rem;
+}
+
+.signature-settings-upload-preview {
+  min-height: 5rem;
+  padding: 1rem;
+  background: var(--background-white, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signature-settings-upload-preview img {
+  max-width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+}
+
+.signature-settings-upload-preview-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--footer-text, #4a5568);
+  line-height: 1.4;
+}
+
+/* Action buttons: centered, consistent spacing (corporate / government style) */
+.signature-settings-form-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+
+/* Remove = danger (red outline), same size as system-settings-btn-secondary */
+.signature-settings-btn-remove {
+  color: var(--reject-red, #b91c1c) !important;
+  border-color: var(--reject-red, #b91c1c) !important;
+  background: transparent !important;
+}
+
+.signature-settings-btn-remove:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 0.08) !important;
+  border-color: var(--reject-red-dark, #991b1b) !important;
+  color: var(--reject-red-dark, #991b1b) !important;
+}
+
+.signature-settings-btn-remove:disabled {
+  color: var(--footer-text, #9ca3af) !important;
+  border-color: var(--border-color, #e5e7eb) !important;
+}

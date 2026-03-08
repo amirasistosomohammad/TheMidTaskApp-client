@@ -91,6 +91,7 @@ export default function PerformanceReport() {
         date_to: period.to,
       });
       if (isSchoolHead && aoId) params.set("ao_id", aoId);
+      params.set("_", String(Date.now()));
       const path = `/reports/performance-report?${params.toString()}`;
       await apiDownload(path, undefined);
       showToast.success("Report downloaded successfully.");
@@ -128,8 +129,8 @@ export default function PerformanceReport() {
               <h1 className="timeline-title">Performance report</h1>
               <p className="timeline-subtitle">
                 {isAO
-                  ? "Generate your MIDTAS performance report (Excel) for the selected period. Timeliness, quality, and compliance are derived from your task and validation data."
-                  : "Generate a MIDTAS performance report (Excel) for a personnel under your supervision. Select the personnel and period, then download the report."}
+                  ? "Generate your performance report (Excel) for the selected reporting period. Data is drawn from system records of tasks and validations."
+                  : "Generate a performance report (Excel) for personnel under your supervision. Select the staff member and reporting period, then download the report."}
               </p>
             </div>
           </div>
@@ -146,12 +147,6 @@ export default function PerformanceReport() {
               <code>server/storage/app/reports/</code> in your repo and redeploy so Excel generation works.
             </div>
           )}
-          {templateAvailable === true && (
-            <p className="perf-report-template-ok" aria-live="polite">
-              Report template is available. You can generate the Excel report below.
-            </p>
-          )}
-
           {isSchoolHead && (
             <div className="perf-report-field">
               <label htmlFor="perf-report-ao" className="perf-report-label">
@@ -260,12 +255,6 @@ export default function PerformanceReport() {
             </button>
           </div>
         </div>
-      </section>
-
-      <section className="perf-report-info" aria-label="Report description">
-        <p className="perf-report-info-text">
-          The report uses the official MIDTAS template and fills it with data from the system: personnel name and school, period covered, task completion counts, and derived scores for <strong>Timeliness</strong>, <strong>Quality &amp; Accuracy</strong>, and <strong>Compliance</strong> based on your submitted tasks and validations. Ensure the template file is stored on the server at <code>storage/app/reports/Sample Performance Report MIDTASK.xlsx</code>.
-        </p>
       </section>
     </div>
     </PersonnelPendingGate>

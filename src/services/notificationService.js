@@ -2,7 +2,19 @@
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 
-// SweetAlert2 configurations (MidTask theme - teal/blue)
+// Use root colors from index.css (--primary-blue, --sidebar-text, --reject-red, etc.)
+const ROOT = {
+  primary: "#0b558f",       // --primary-blue
+  primaryDark: "#094a75",   // --primary-blue-dark
+  text: "#1e3a5f",         // --sidebar-text
+  textMuted: "#4a5568",    // --footer-text
+  cancel: "#6c757d",
+  danger: "#b91c1c",       // --reject-red
+  success: "#16a34a",       // --success-green
+  warning: "#856404",
+};
+
+// SweetAlert2 configurations (aligned with index.css — corporate / government)
 export const showAlert = {
   success: (title, text = "", timer = 3000) => {
     return Swal.fire({
@@ -13,8 +25,8 @@ export const showAlert = {
       timerProgressBar: true,
       showConfirmButton: false,
       background: "#fff",
-      color: "#1a365d",
-      iconColor: "#0d9488",
+      color: ROOT.text,
+      iconColor: ROOT.success,
     });
   },
 
@@ -26,9 +38,9 @@ export const showAlert = {
       timer,
       timerProgressBar: true,
       background: "#fff",
-      color: "#1a365d",
-      confirmButtonColor: "#0d9488",
-      iconColor: "#dc3545",
+      color: ROOT.text,
+      confirmButtonColor: ROOT.primary,
+      iconColor: ROOT.danger,
     });
   },
 
@@ -41,8 +53,8 @@ export const showAlert = {
       timerProgressBar: true,
       showConfirmButton: false,
       background: "#fff",
-      color: "#1a365d",
-      iconColor: "#ffc107",
+      color: ROOT.text,
+      iconColor: ROOT.warning,
     });
   },
 
@@ -61,9 +73,9 @@ export const showAlert = {
       timerProgressBar: !!timer,
       showConfirmButton: true,
       confirmButtonText,
-      confirmButtonColor: "#0d9488",
+      confirmButtonColor: ROOT.primary,
       background: "#fff",
-      color: "#1a365d",
+      color: ROOT.text,
       width: "450px",
       maxWidth: "95vw",
       padding: "1rem",
@@ -97,13 +109,13 @@ export const showAlert = {
       text,
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#0d9488",
-      cancelButtonColor: "#6c757d",
+      confirmButtonColor: ROOT.primary,
+      cancelButtonColor: ROOT.cancel,
       confirmButtonText,
       cancelButtonText,
       background: "#fff",
-      color: "#1a365d",
-      iconColor: "#0d9488",
+      color: ROOT.text,
+      iconColor: ROOT.primary,
     });
   },
 
@@ -115,7 +127,23 @@ export const showAlert = {
       allowEnterKey: false,
       showConfirmButton: false,
       background: "#fff",
-      color: "#1a365d",
+      color: ROOT.text,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+  },
+
+  loadingWithOverlay: (title = "Loading...") => {
+    return Swal.fire({
+      title,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      showConfirmButton: false,
+      background: "#fff",
+      color: ROOT.text,
+      backdrop: "rgba(0,0,0,0.25)",
       didOpen: () => {
         Swal.showLoading();
       },
@@ -127,7 +155,7 @@ export const showAlert = {
   },
 };
 
-// Toastify configurations (MidTask theme)
+// Toastify configurations (aligned with index.css — primary-blue, corporate / government)
 export const showToast = {
   success: (message, autoClose = 3000) => {
     toast.success(message, {
@@ -140,14 +168,14 @@ export const showToast = {
       progress: undefined,
       theme: "light",
       style: {
-        background: "#f0fdfa",
-        color: "#0d9488",
-        border: "1px solid #99f6e4",
+        background: "#f0f9ff",
+        color: ROOT.primary,
+        border: "1px solid rgba(11, 85, 143, 0.25)",
         borderRadius: "8px",
         fontWeight: "500",
       },
       progressStyle: {
-        background: "#0d9488",
+        background: ROOT.primary,
       },
     });
   },
@@ -164,13 +192,13 @@ export const showToast = {
       theme: "light",
       style: {
         background: "#fff5f5",
-        color: "#dc3545",
-        border: "1px solid #f8d7da",
+        color: ROOT.danger,
+        border: "1px solid rgba(185, 28, 28, 0.2)",
         borderRadius: "8px",
         fontWeight: "500",
       },
       progressStyle: {
-        background: "#dc3545",
+        background: ROOT.danger,
       },
     });
   },
@@ -187,13 +215,13 @@ export const showToast = {
       theme: "light",
       style: {
         background: "#fffbf0",
-        color: "#856404",
-        border: "1px solid #ffeaa7",
+        color: ROOT.warning,
+        border: "1px solid rgba(245, 158, 11, 0.3)",
         borderRadius: "8px",
         fontWeight: "500",
       },
       progressStyle: {
-        background: "#ffc107",
+        background: "#eab308",
       },
     });
   },
@@ -210,13 +238,13 @@ export const showToast = {
       theme: "light",
       style: {
         background: "#f0f9ff",
-        color: "#0d9488",
-        border: "1px solid #ccfbf1",
+        color: ROOT.primary,
+        border: "1px solid rgba(11, 85, 143, 0.2)",
         borderRadius: "8px",
         fontWeight: "500",
       },
       progressStyle: {
-        background: "#0d9488",
+        background: ROOT.primary,
       },
     });
   },

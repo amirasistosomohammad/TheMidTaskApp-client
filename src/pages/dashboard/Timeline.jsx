@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -101,6 +101,8 @@ export default function Timeline() {
   const [kpiModal, setKpiModal] = useState(null); // 'pending' | 'overdue' | 'submitted' | 'completed'
   const [kpiModalClosing, setKpiModalClosing] = useState(false);
   const [collapsedMonths, setCollapsedMonths] = useState({});
+  const [expandedHeights, setExpandedHeights] = useState({});
+  const monthContentRefs = useRef({});
 
   const fetchTimeline = useCallback(async () => {
     if (user?.role !== "administrative_officer" || user?.status !== "active") {
@@ -200,6 +202,35 @@ export default function Timeline() {
   }, [tabTasks, yearFilter, statusFilter, actionFilter, searchQuery]);
 
   const grouped = groupByMonth(filteredTasks);
+
+  const measureExpandedMonths = useCallback(() => {
+    setExpandedHeights((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      grouped.forEach(({ monthKey }) => {
+        if (collapsedMonths[monthKey]) return;
+        const el = monthContentRefs.current[monthKey];
+        if (el) {
+          const h = el.scrollHeight;
+          if (next[monthKey] !== h) {
+            next[monthKey] = h;
+            changed = true;
+          }
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [grouped, collapsedMonths]);
+
+  useLayoutEffect(() => {
+    measureExpandedMonths();
+  }, [measureExpandedMonths]);
+
+  useEffect(() => {
+    const onResize = () => measureExpandedMonths();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [measureExpandedMonths]);
 
   useEffect(() => {
     if (!kpiModal) return;
@@ -527,11 +558,21 @@ export default function Timeline() {
                   <div
                     id={`timeline-month-panel-${monthKey}`}
                     className={`timeline-month-body ${isCollapsed ? "collapsed" : ""}`}
+                    style={{
+                      maxHeight: isCollapsed ? 0 : (expandedHeights[monthKey] ?? 10000),
+                    }}
                   >
-                    <div className="timeline-track">
-                    {tasks.map((ut, idx) => (
-                      <TimelineItem key={ut.id} userTask={ut} isLast={idx === tasks.length - 1} />
-                    ))}
+                    <div
+                      className="timeline-month-body-inner"
+                      ref={(el) => {
+                        monthContentRefs.current[monthKey] = el;
+                      }}
+                    >
+                      <div className="timeline-track">
+                        {tasks.map((ut, idx) => (
+                          <TimelineItem key={ut.id} userTask={ut} isLast={idx === tasks.length - 1} />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </section>

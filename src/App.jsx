@@ -40,6 +40,7 @@ import InDevelopmentPlaceholder from "./components/InDevelopmentPlaceholder";
 import SchoolHeadValidations from "./pages/dashboard/SchoolHeadValidations";
 import SchoolHeadValidationReport from "./pages/dashboard/SchoolHeadValidationReport";
 import SchoolHeadTaskHistory from "./pages/dashboard/SchoolHeadTaskHistory";
+import SignatureSettings from "./pages/dashboard/SignatureSettings";
 import CreatePersonalTask from "./pages/dashboard/CreatePersonalTask";
 import Submissions from "./pages/dashboard/Submissions";
 import FilesArchive from "./pages/dashboard/FilesArchive";
@@ -295,6 +296,14 @@ const router = createBrowserRouter(
           element={
             <RoleRoute allowRoles={["school_head"]}>
               <SchoolHeadTaskHistory />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="school-head/signature"
+          element={
+            <RoleRoute allowRoles={["school_head"]}>
+              <SignatureSettings />
             </RoleRoute>
           }
         />

@@ -182,6 +182,7 @@ export default function PerformanceReport() {
 
           <div className="perf-report-dates">
             <div className="perf-report-field">
+              {/* TEMPORARILY DISABLED EXCEL FORMAT PER CLIENT REQUEST
               <span className="perf-report-label">Format</span>
               <div className="perf-report-format-options" role="group" aria-label="Report format">
                 <label className="perf-report-format-option">
@@ -207,6 +208,7 @@ export default function PerformanceReport() {
                   <span>Excel (.xlsx)</span>
                 </label>
               </div>
+              */}
             </div>
           </div>
 
@@ -278,15 +280,10 @@ export default function PerformanceReport() {
                   <FaSpinner className="spinner" aria-hidden="true" />
                   <span>Generating…</span>
                 </>
-              ) : format === "pdf" ? (
+              ) : (
                 <>
                   <FaFilePdf className="perf-report-generate-icon" aria-hidden="true" />
                   <span>Generate report (PDF)</span>
-                </>
-              ) : (
-                <>
-                  <FaFileExcel className="perf-report-generate-icon" aria-hidden="true" />
-                  <span>Generate report (Excel)</span>
                 </>
               )}
             </button>

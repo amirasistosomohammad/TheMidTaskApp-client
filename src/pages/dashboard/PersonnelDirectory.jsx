@@ -20,7 +20,7 @@ import {
   FaTimesCircle,
   FaUserSlash,
 } from "react-icons/fa";
-import { apiRequest } from "../../services/apiClient";
+import { apiRequest, normalizeLogoUrl } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import "./PersonnelDirectory.css";
 import "./SchoolHeadAccounts.css";
@@ -770,7 +770,7 @@ export default function PersonnelDirectory() {
                           {/* Top strip: full-width avatar (DATravelApp-style) */}
                           <div className="personnel-dir-card-top-strip">
                             {p.avatar_url || p.profile_avatar_url ? (
-                              <img src={p.avatar_url || p.profile_avatar_url} alt="" className="personnel-dir-card-top-img" />
+                              <img src={normalizeLogoUrl(p.avatar_url || p.profile_avatar_url) || (p.avatar_url || p.profile_avatar_url)} alt="" className="personnel-dir-card-top-img" />
                             ) : (
                               <div className="personnel-dir-card-top-initials" aria-hidden="true">
                                 <span className="personnel-dir-avatar-initials">{getInitials(p.name)}</span>
@@ -1024,7 +1024,7 @@ export default function PersonnelDirectory() {
                   <div className="personnel-dir-details-avatar-section">
                     <div className="personnel-dir-avatar personnel-dir-avatar-lg" aria-hidden="true">
                       {detailsUser.avatar_url || detailsUser.profile_avatar_url ? (
-                        <img src={detailsUser.avatar_url || detailsUser.profile_avatar_url} alt="" />
+                        <img src={normalizeLogoUrl(detailsUser.avatar_url || detailsUser.profile_avatar_url) || (detailsUser.avatar_url || detailsUser.profile_avatar_url)} alt="" />
                       ) : (
                         <span className="personnel-dir-avatar-initials">{getInitials(detailsUser.name)}</span>
                       )}

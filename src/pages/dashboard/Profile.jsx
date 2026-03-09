@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { apiRequest, apiRequestFormData } from "../../services/apiClient";
+import { apiRequest, apiRequestFormData, normalizeLogoUrl } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import { FaUser, FaSpinner, FaLock, FaSave, FaEnvelope, FaIdCard, FaBuilding, FaMapMarkerAlt, FaImage, FaEye, FaEyeSlash } from "react-icons/fa";
 import "./Profile.css";
@@ -231,7 +231,7 @@ export default function Profile() {
       <div className="system-settings-header">
         <div className="profile-settings-avatar-wrap" aria-hidden="true">
           {user.avatar_url ? (
-            <img src={user.avatar_url} alt="" />
+            <img src={normalizeLogoUrl(user.avatar_url) || user.avatar_url} alt="" />
           ) : (
             <span className="profile-settings-avatar-placeholder"><FaUser /></span>
           )}
@@ -292,7 +292,7 @@ export default function Profile() {
                   <div className="system-settings-logo-row">
                     <div className="system-settings-logo-preview profile-settings-photo-preview">
                       {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="Profile photo" style={{ objectFit: 'cover' }} />
+                        <img src={normalizeLogoUrl(user.avatar_url) || user.avatar_url} alt="Profile photo" style={{ objectFit: 'cover' }} />
                       ) : (
                         <span className="system-settings-logo-placeholder">
                           <FaImage aria-hidden="true" />
@@ -329,7 +329,7 @@ export default function Profile() {
                     <div className="system-settings-logo-row">
                       <div className="system-settings-logo-preview">
                         {user.school_logo_url ? (
-                          <img src={user.school_logo_url} alt="School logo" style={{ objectFit: 'cover' }} />
+                          <img src={normalizeLogoUrl(user.school_logo_url) || user.school_logo_url} alt="School logo" style={{ objectFit: 'cover' }} />
                         ) : (
                           <span className="system-settings-logo-placeholder">
                             <FaImage aria-hidden="true" />

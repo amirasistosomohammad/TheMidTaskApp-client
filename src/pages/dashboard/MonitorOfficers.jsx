@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { apiRequest } from "../../services/apiClient";
+import { apiRequest, normalizeLogoUrl } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import {
   FaDesktop,
@@ -512,7 +512,7 @@ function OfficerCard({ officer, expanded, onToggle, formatDate, frequencyLabel, 
   const [showAllCompleted, setShowAllCompleted] = useState(false);
 
   const hasTasks = pending.length + missing.length + completed.length > 0;
-  const rawAvatar = officer.avatar_url || officer.profile_avatar_url;
+  const rawAvatar = normalizeLogoUrl(officer.avatar_url || officer.profile_avatar_url) || (officer.avatar_url || officer.profile_avatar_url);
   const avatarSrc = rawAvatar ? buildAvatarUrl(rawAvatar) : null;
 
   const pendingItems = showAllPending ? pending : pending.slice(0, LIST_PREVIEW_LIMIT);

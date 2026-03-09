@@ -23,7 +23,7 @@ import {
   FaTrash,
   FaEyeSlash,
 } from "react-icons/fa";
-import { apiRequest, apiRequestFormData } from "../../services/apiClient";
+import { apiRequest, apiRequestFormData, normalizeLogoUrl } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import SearchableAoSelect from "../../components/SearchableAoSelect";
 import "./AccountApprovals.css";
@@ -981,7 +981,7 @@ export default function SchoolHeadAccounts() {
                         >
                           <div className="personnel-dir-card-top-strip">
                             {user.avatar_url ? (
-                              <img src={user.avatar_url} alt="" className="personnel-dir-card-top-img" />
+                              <img src={normalizeLogoUrl(user.avatar_url) || user.avatar_url} alt="" className="personnel-dir-card-top-img" />
                             ) : (
                               <div className="personnel-dir-card-top-initials" aria-hidden="true">
                                 <span className="personnel-dir-avatar-initials">{getInitials(user.name)}</span>
@@ -1113,7 +1113,7 @@ export default function SchoolHeadAccounts() {
                   <div className="personnel-dir-details-avatar-section">
                     <div className="personnel-dir-avatar personnel-dir-avatar-lg" aria-hidden="true">
                       {detailsUser.avatar_url ? (
-                        <img src={detailsUser.avatar_url} alt="" />
+                        <img src={normalizeLogoUrl(detailsUser.avatar_url) || detailsUser.avatar_url} alt="" />
                       ) : (
                         <span className="personnel-dir-avatar-initials">{getInitials(detailsUser.name)}</span>
                       )}

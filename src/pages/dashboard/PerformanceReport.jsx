@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FaFileExcel, FaSpinner, FaUser, FaCalendarAlt } from "react-icons/fa";
+import { FaFileExcel, FaFilePdf, FaSpinner, FaUser, FaCalendarAlt } from "react-icons/fa";
 import { apiRequest, apiDownload } from "../../services/apiClient";
 import { showToast } from "../../services/notificationService";
 import { useAuth } from "../../hooks/useAuth";
@@ -30,6 +30,7 @@ export default function PerformanceReport() {
 
   const [period, setPeriod] = useState(() => defaultPeriod());
   const [aoId, setAoId] = useState("");
+  const [format, setFormat] = useState("pdf"); // default PDF for official records (non-tamperable)
   const [officers, setOfficers] = useState([]);
   const [loadingOfficers, setLoadingOfficers] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -89,6 +90,7 @@ export default function PerformanceReport() {
       const params = new URLSearchParams({
         date_from: period.from,
         date_to: period.to,
+        format: format,
       });
       if (isSchoolHead && aoId) params.set("ao_id", aoId);
       params.set("_", String(Date.now()));
@@ -129,8 +131,8 @@ export default function PerformanceReport() {
               <h1 className="timeline-title">Performance report</h1>
               <p className="timeline-subtitle">
                 {isAO
-                  ? "Generate your performance report (Excel) for the selected reporting period. Data is drawn from system records of tasks and validations."
-                  : "Generate a performance report (Excel) for personnel under your supervision. Select the staff member and reporting period, then download the report."}
+                  ? "Generate your performance report for the selected period. Choose PDF (recommended for official records—cannot be edited) or Excel."
+                  : "Generate a performance report for personnel under your supervision. Choose PDF (recommended) or Excel, then select the staff member and period."}
               </p>
             </div>
           </div>
@@ -177,6 +179,36 @@ export default function PerformanceReport() {
               )}
             </div>
           )}
+
+          <div className="perf-report-dates">
+            <div className="perf-report-field">
+              <span className="perf-report-label">Format</span>
+              <div className="perf-report-format-options" role="group" aria-label="Report format">
+                <label className="perf-report-format-option">
+                  <input
+                    type="radio"
+                    name="report-format"
+                    value="pdf"
+                    checked={format === "pdf"}
+                    onChange={() => setFormat("pdf")}
+                  />
+                  <FaFilePdf className="perf-report-format-icon" aria-hidden="true" />
+                  <span>PDF</span>
+                </label>
+                <label className="perf-report-format-option">
+                  <input
+                    type="radio"
+                    name="report-format"
+                    value="xlsx"
+                    checked={format === "xlsx"}
+                    onChange={() => setFormat("xlsx")}
+                  />
+                  <FaFileExcel className="perf-report-format-icon" aria-hidden="true" />
+                  <span>Excel (.xlsx)</span>
+                </label>
+              </div>
+            </div>
+          </div>
 
           <div className="perf-report-dates">
             <div className="perf-report-field">
@@ -245,6 +277,11 @@ export default function PerformanceReport() {
                 <>
                   <FaSpinner className="spinner" aria-hidden="true" />
                   <span>Generating…</span>
+                </>
+              ) : format === "pdf" ? (
+                <>
+                  <FaFilePdf className="perf-report-generate-icon" aria-hidden="true" />
+                  <span>Generate report (PDF)</span>
                 </>
               ) : (
                 <>

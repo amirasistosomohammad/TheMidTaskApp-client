@@ -250,7 +250,7 @@ export default function AssignTask() {
           <div>
             <h1 className="assign-task-card-title">Assign task</h1>
             <p className="assign-task-card-subtitle">
-              Select a task, choose Administrative Officers, and set a due date.
+              Select a task, choose Administrative Officers, and set a due date. Assignees will receive an email notification when a task is assigned to them.
             </p>
           </div>
         </div>

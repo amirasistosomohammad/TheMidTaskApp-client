@@ -17,6 +17,7 @@ import {
 } from "react-icons/fa";
 import { showToast } from "../../services/notificationService";
 import "./TaskDetail.css";
+import "./TaskDetailFeedback.css";
 
 const API_BASE = (import.meta.env.VITE_LARAVEL_API || "").replace(/\/$/, "");
 
@@ -928,7 +929,7 @@ export default function TaskDetail() {
               {isInput && !submissionsLoading && (
                 <div className="task-detail-upload-submit-section task-detail-input-submit-section">
                   <p className="task-detail-upload-submit-hint">
-                    When the form is complete, click the button below to save your data and submit this task to the School Head for validation.
+                    When the form is complete, click the button below to save your data and submit this task to the School Head for validation. Your School Head will receive an email notification.
                   </p>
                   <button
                     type="button"
@@ -1099,7 +1100,7 @@ export default function TaskDetail() {
               {isUpload && !isCompleted && submissions?.some((s) => Array.isArray(s.files) && s.files.length > 0) && (
                 <div className="task-detail-upload-submit-section">
                   <p className="task-detail-upload-submit-hint">
-                    When all required MOV files are uploaded, submit this task for validation by the School Head.
+                    When all required MOV files are uploaded, submit this task for validation by the School Head. Your School Head will receive an email notification.
                   </p>
                   <button
                     type="button"
@@ -1130,6 +1131,27 @@ export default function TaskDetail() {
             <div className="task-detail-completed-msg">
               <FaCheckCircle className="task-detail-completed-icon" aria-hidden="true" />
               <span>This task has been submitted or completed.</span>
+            </div>
+          )}
+
+          {userTask?.status === "pending" && submissions?.length > 0 && submissions.some((s) => s.validations && s.validations.length > 0) && (
+            <div className="task-detail-feedback-section">
+              <h3 className="task-detail-feedback-title">School Head remarks</h3>
+              {submissions.map((s) => 
+                s.validations?.map((v) => (
+                  <div key={v.id} className={`task-detail-feedback-card ${v.status === 'rejected' ? 'task-detail-feedback-card-rejected' : ''}`}>
+                    <div className="task-detail-feedback-header">
+                      <span className={`task-detail-feedback-status ${v.status === 'rejected' ? 'task-detail-feedback-status-rejected' : ''}`}>
+                        {v.status === 'rejected' ? 'Returned for revision' : 'Approved'}
+                      </span>
+                      <span className="task-detail-feedback-date">{formatDate(v.validated_at)}</span>
+                    </div>
+                    {v.feedback && (
+                      <p className="task-detail-feedback-text">{v.feedback}</p>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>

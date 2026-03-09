@@ -35,6 +35,7 @@ export default function Profile() {
   });
   const [showPasswordCriteria, setShowPasswordCriteria] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const [schoolLogoLoading, setSchoolLogoLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -107,6 +108,33 @@ export default function Profile() {
       showToast.error(msg);
     } finally {
       setAvatarLoading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSchoolLogoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showToast.error("Image must be 2MB or less.");
+      return;
+    }
+    if (!/^image\/(jpeg|jpg|png|gif|webp)$/i.test(file.type)) {
+      showToast.error("Use JPEG, PNG, GIF, or WebP.");
+      return;
+    }
+    setSchoolLogoLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("school_logo", file);
+      const res = await apiRequestFormData("/user/school-logo", { method: "POST", formData: fd, auth: true });
+      if (res?.user) await refreshUser();
+      showToast.success("School logo updated.");
+    } catch (err) {
+      const msg = err?.data?.errors?.school_logo?.[0] || err?.message || "Failed to upload logo.";
+      showToast.error(msg);
+    } finally {
+      setSchoolLogoLoading(false);
       e.target.value = "";
     }
   };
@@ -264,7 +292,7 @@ export default function Profile() {
                   <div className="system-settings-logo-row">
                     <div className="system-settings-logo-preview profile-settings-photo-preview">
                       {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="Profile photo" />
+                        <img src={user.avatar_url} alt="Profile photo" style={{ objectFit: 'cover' }} />
                       ) : (
                         <span className="system-settings-logo-placeholder">
                           <FaImage aria-hidden="true" />
@@ -294,6 +322,44 @@ export default function Profile() {
                     </div>
                   </div>
                 </div>
+
+                {(user.role === 'school_head' || user.role === 'administrative_officer') && (
+                  <div className="system-settings-branding-preview-wrap profile-settings-photo-wrap">
+                    <label className="system-settings-label">School logo</label>
+                    <div className="system-settings-logo-row">
+                      <div className="system-settings-logo-preview">
+                        {user.school_logo_url ? (
+                          <img src={user.school_logo_url} alt="School logo" style={{ objectFit: 'cover' }} />
+                        ) : (
+                          <span className="system-settings-logo-placeholder">
+                            <FaImage aria-hidden="true" />
+                          </span>
+                        )}
+                      </div>
+                      <div className="system-settings-logo-actions">
+                        <input
+                          id="profile-school-logo"
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                          onChange={handleSchoolLogoChange}
+                          disabled={schoolLogoLoading}
+                          className="system-settings-logo-input"
+                        />
+                        <label htmlFor="profile-school-logo" className="system-settings-logo-btn">
+                          {schoolLogoLoading ? (
+                            <>
+                              <FaSpinner className="spinner" aria-hidden="true" />
+                              <span>Uploading…</span>
+                            </>
+                          ) : (
+                            "Upload school logo"
+                          )}
+                        </label>
+                        <span className="system-settings-logo-hint">PNG, JPG, WEBP up to 2MB. Included in reports.</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <form onSubmit={handleProfileSubmit} className="system-settings-form">
                   <div className="profile-settings-grid">

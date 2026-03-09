@@ -1,0 +1,57 @@
+/* CSS for TaskDetail feedback section */
+.task-detail-feedback-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.task-detail-feedback-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.task-detail-feedback-card {
+  background-color: #f7fafc;
+  border-left: 4px solid var(--primary);
+  padding: 1rem 1.25rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+  margin-bottom: 1rem;
+}
+
+.task-detail-feedback-card-rejected {
+  background-color: #fff5f5;
+  border-left-color: var(--danger);
+}
+
+.task-detail-feedback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.task-detail-feedback-status {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.task-detail-feedback-status-rejected {
+  color: var(--danger);
+}
+
+.task-detail-feedback-date {
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+.task-detail-feedback-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-dark);
+  line-height: 1.5;
+}

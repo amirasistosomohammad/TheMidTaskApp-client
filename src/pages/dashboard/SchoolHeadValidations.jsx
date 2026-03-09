@@ -581,7 +581,7 @@ export default function SchoolHeadValidations() {
                       aria-describedby="shv-feedback-hint"
                     />
                     <p id="shv-feedback-hint" className="shv-feedback-hint">
-                      Max 2,000 characters. Required when rejecting.
+                      Max 2,000 characters. The personnel will receive an email notification of your decision (approved or rejected).
                     </p>
                     <div className="shv-actions">
                       <button

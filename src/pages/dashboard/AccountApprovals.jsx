@@ -873,7 +873,7 @@ export default function AccountApprovals() {
                 </div>
                 <div className="account-approvals-details-body account-approvals-confirm-body">
                   <p className="account-approvals-confirm-text">
-                    You are about to approve <strong>{approveModalUser.name}</strong>’s account. This will grant the user access to the system. This action cannot be undone from this screen.
+                    You are about to approve <strong>{approveModalUser.name}</strong>’s account. This will grant the user access to the system. The user will receive an email notification at their registered email address. This action cannot be undone from this screen.
                   </p>
                 </div>
                 <div className="account-approvals-details-footer account-approvals-action-footer">
@@ -941,7 +941,7 @@ export default function AccountApprovals() {
                 </div>
                 <div className="account-approvals-details-body account-approvals-confirm-body">
                   <p className="account-approvals-confirm-text">
-                    You are about to reject <strong>{rejectModalUser.name}</strong>’s account. The user will not be able to sign in. This action cannot be undone from this screen.
+                    You are about to reject <strong>{rejectModalUser.name}</strong>’s account. The user will not be able to sign in and will receive an email notification at their registered email address. This action cannot be undone from this screen.
                   </p>
                 </div>
                 <div className="account-approvals-details-footer account-approvals-action-footer">
